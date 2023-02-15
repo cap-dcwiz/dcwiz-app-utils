@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "dcwiz-app-utils"
+version = "0.1.0"
+description = ""
+authors = ["Zhu Zhaomeng <zhaomeng.zhu@ntu.edu.sg>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "dcwiz_app_utils"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+sqlalchemy = "^2.0.3"
+uvicorn = "^0.20.0"
+typer = "^0.7.0"
+dynaconf = "^3.1.11"
+fastapi = "^0.92.0"
+alembic = "^1.9.3"
+
+
+[tool.poetry.group.dev.dependencies]
+black = {extras = ["d"], version = "^23.1.0"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
