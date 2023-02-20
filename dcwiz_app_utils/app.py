@@ -53,7 +53,7 @@ def get_router_maps(_path, _name):
             router = getattr(sub_app, "router", None)
             if router:
                 if module.name == "default":
-                    router_map["/"] = router
+                    router_map[""] = router
                 else:
                     router_map[f"/{module.name}"] = router
         except Exception as e:
