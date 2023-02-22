@@ -285,3 +285,7 @@ class PlatformClient:
             verify=config.get("platform.verify", True),
             auth=auth,
         )
+
+
+def get_platform_client():
+    return PlatformClient.from_config()
