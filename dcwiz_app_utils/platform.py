@@ -90,7 +90,7 @@ class PlatformClient:
             full_url = f"{self.base_url}{url}"
 
         try:
-            with self.client(client, bearer) as client:
+            async with self.client(client, bearer) as client:
                 res = await client.request(method, full_url, *args, **kwargs)
         except Exception as e:
             raise DCWizException(
