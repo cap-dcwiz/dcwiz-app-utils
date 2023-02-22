@@ -9,6 +9,12 @@ from pydantic import BaseModel, Field
 from .error import Error
 
 
+class ORMLinkedSchema(BaseModel):
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
+
+
 class ResponseBase(BaseModel):
     message: str = Field(None, description="Message")
     errors: list[Error] = Field(None, description="List of errors")
@@ -21,8 +27,8 @@ def response_wrapper(base_model_type=None) -> Type[ResponseBase]:
     if not base_model_type:
         return ResponseBase
     if (
-        isinstance(base_model_type, GenericAlias)
-        and get_origin(base_model_type) is list
+            isinstance(base_model_type, GenericAlias)
+            and get_origin(base_model_type) is list
     ):
         many = True
         base_model_type = get_args(base_model_type)[0]
