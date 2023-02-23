@@ -19,10 +19,13 @@ class Error(BaseModel):
 
 
 class DCWizException(Exception):
-    def __init__(self, message, errors=None):
+    def __init__(self, message=None, errors=None):
         super().__init__()
-        self.message = message
         self.errors = errors or []
+        if message:
+            self.message = message
+        else:
+            self.message = ";".join(f"{e.type}: {e.message}" for e in self.errors)
 
 
 async def http_exception_handler(_, exc):

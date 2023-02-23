@@ -63,7 +63,7 @@ class PlatformClient:
     @staticmethod
     def utinni_error_handler(method, url, response: Response):
         raise DCWizException(
-            message=f"Data Error: {method} {url}: ",
+            message=f"Data Error: {method} {url}: {response.status_code}",
             errors=[
                 Error(
                     type="Data Error", severity=ErrorSeverity.ERROR, message=f"{k}:{v}"
@@ -183,7 +183,6 @@ class PlatformClient:
                     }
         else:
             raise DCWizException(
-                message=f"Invalid request type: {type(requests)}",
                 errors=[
                     Error(
                         type="Internal Error",
@@ -288,5 +287,5 @@ class PlatformClient:
         )
 
 
-def get_platform_client():
-    return PlatformClient.from_config()
+def get_platform_client(config: Dynaconf = None):
+    return PlatformClient.from_config(config)

@@ -17,14 +17,14 @@ class AuthServiceClient:
         return cls(auth_url=config.get("auth.url"))
 
     @staticmethod
-    def extract_bearer(fastapi_request):
-        if "Authorization" in fastapi_request.headers:
-            return fastapi_request.headers["Authorization"].replace("Bearer ", "")
+    def extract_bearer(request):
+        if "Authorization" in request.headers:
+            return request.headers["Authorization"].replace("Bearer ", "")
         return None
 
-    async def get_self_scopes(self, bearer: str = None, fastapi_request=None):
-        if not bearer and fastapi_request:
-            bearer = self.extract_bearer(fastapi_request)
+    async def get_self_scopes(self, bearer: str = None, request=None):
+        if not bearer and request:
+            bearer = self.extract_bearer(request)
         res = dict(data_halls=[], chiller_plants=[])
         if not bearer:
             return res
@@ -46,5 +46,5 @@ class AuthServiceClient:
         return res
 
 
-def get_auth_service_client():
-    return AuthServiceClient.from_config()
+def get_auth_service_client(config=None):
+    return AuthServiceClient.from_config(config)
