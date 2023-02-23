@@ -1,5 +1,5 @@
 from .app import get_config, get_router_maps
-from .auth import AuthServiceClient
+from .auth import get_auth_service_client
 from .cli import create_cli_main
 from .db import DBBase, WithDB, db_session_from_config, redis_from_config
 from .error import ErrorSeverity, Error, DCWizException

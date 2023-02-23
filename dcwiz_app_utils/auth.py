@@ -44,3 +44,7 @@ class AuthServiceClient:
             elif item.startswith("chiller_plant."):
                 res["chiller_plants"].append(int(item.split(".")[1]))
         return res
+
+
+def get_auth_service_client():
+    return AuthServiceClient.from_config()

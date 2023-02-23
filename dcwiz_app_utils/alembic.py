@@ -1,7 +1,6 @@
 import os
 from logging.config import fileConfig
 from dynaconf import Dynaconf
-from .db import DBBase
 
 
 def get_url_from_env():
