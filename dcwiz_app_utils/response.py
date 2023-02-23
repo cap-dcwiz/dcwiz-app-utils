@@ -1,5 +1,3 @@
-from contextlib import contextmanager
-from enum import Enum
 from functools import wraps
 from types import GenericAlias
 
@@ -8,19 +6,13 @@ from typing import Type, get_origin, get_args
 import pydantic
 from pydantic import BaseModel, Field
 
-
-class ErrorSeverity(str, Enum):
-    CRITICAL = "Critical"
-    ERROR = "Error"
-    WARNING = "Warning"
-    INFO = "Info"
-    DEBUG = "Debug"
+from .error import Error
 
 
-class Error(BaseModel):
-    type: str = Field(..., description="Error type")
-    severity: ErrorSeverity = Field(ErrorSeverity.ERROR, description="Error severity")
-    message: str = Field(None, description="Error message")
+class ORMLinkedSchema(BaseModel):
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
 
 
 class ResponseBase(BaseModel):
