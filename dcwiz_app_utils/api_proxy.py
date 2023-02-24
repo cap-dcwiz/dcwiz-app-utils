@@ -1,7 +1,7 @@
 import asyncio
 import contextlib
 import json
-import logging
+from loguru import logger
 from random import uniform
 from typing import Union
 
@@ -117,8 +117,8 @@ class APIProxy:
         async with self.client(client, bearer) as client:
             res = await client.request(method, full_url, *args, **kwargs)
             if res.status_code != 200:
-                logging.error(f"API Error: {method} {full_url}: {res.status_code}")
-                logging.debug(res.text)
+                logger.error(f"API Error: {method} {full_url}: {res.status_code}")
+                logger.debug(res.text)
                 raise exception_class(method=method, url=full_url, response=res)
 
         return res.json()
