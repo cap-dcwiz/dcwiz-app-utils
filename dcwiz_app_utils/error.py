@@ -31,8 +31,9 @@ class DCWizServiceException(Exception):
     async def exception_handler(_, exc):
         content = dict(
             message=exc.message or "Internal Service Error",
-            errors=[e.dict() for e in exc.errors],
         )
+        if exc.errors:
+            content["errors"] = exc.errors
         return JSONResponse(status_code=500, content=content)
 
 
@@ -110,8 +111,9 @@ class DCWizServiceAPIException(DCWizAPIException):
         error = exc.response.json()
         content = dict(
             message=exc.message or error["message"],
-            errors=[Error(**e).dict() for e in error["errors"]],
         )
+        if "errors" in error:
+            content["errors"] = [Error(**e).dict() for e in error["errors"]]
         return JSONResponse(status_code=exc.response.status_code, content=content)
 
 
@@ -125,8 +127,9 @@ class DCWizAuthException(DCWizAPIException):
         error = exc.response.json()
         content = dict(
             message=exc.message or message,
-            errors=[Error(**e).dict() for e in error["errors"]],
         )
+        if "errors" in error:
+            content["errors"] = [Error(**e).dict() for e in error["errors"]]
         return JSONResponse(status_code=exc.response.status_code, content=content)
 
 
