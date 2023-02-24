@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dcwiz-app-utils"
-version = "0.2.1"
+version = "0.3.0"
 description = ""
 authors = ["Zhu Zhaomeng <zhaomeng.zhu@ntu.edu.sg>"]
 license = "MIT"
@@ -20,6 +20,7 @@ pandas = "^1.5.3"
 cachetools = "^5.3.0"
 asyncache = "^0.3.1"
 redis = "^4.5.1"
+loguru = "^0.6.0"
 
 
 [tool.poetry.group.dev.dependencies]

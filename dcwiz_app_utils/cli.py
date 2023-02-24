@@ -6,7 +6,8 @@ from typer import Typer, Option
 from dynaconf import Dynaconf
 from fastapi import FastAPI
 
-from .app import setup_app, set_config
+from .app import set_config
+from .error import setup_exception_handlers
 
 
 def create_cli_main(
@@ -33,7 +34,7 @@ def create_cli_main(
             config = Dynaconf(settings_files=[config_path], envvar_prefix=envvar_prefix)
             set_config(config)
             auth_app = make_app(**kwargs)
-            setup_app(auth_app)
+            setup_exception_handlers(auth_app)
             uvicorn.run(
                 auth_app, host=host, port=port, log_level=loglevel, root_path=root_path
             )
