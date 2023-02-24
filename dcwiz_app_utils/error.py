@@ -49,6 +49,6 @@ async def dcwiz_exception_handler(_, exc: DCWizException):
         status_code=500,
         content=dict(
             message=exc.message,
-            errors=exc.errors,
+            errors=[e.dict(exclude_unset=True) for e in exc.errors],
         ),
     )
