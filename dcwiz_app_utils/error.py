@@ -83,15 +83,23 @@ class DCWizDataAPIException(DCWizAPIException):
     @staticmethod
     async def exception_handler(_, exc):
         error = exc.response.json()
-        content = dict(
-            message=exc.message
-            or f"Data Error: {exc.method} {exc.url}: {exc.response.status_code}",
-            errors=[
+        if isinstance(error["detail"], list):
+            errors = [
                 Error(
                     type="Data Error", severity=ErrorSeverity.ERROR, message=f"{k}:{v}"
                 ).dict()
                 for k, v in error["detail"]
-            ],
+            ]
+        else:
+            errors = [
+                Error(
+                    type="Data Error", severity=ErrorSeverity.ERROR, message=str(error["detail"])
+                ).dict()
+            ]
+        content = dict(
+            message=exc.message
+            or f"Data Error: {exc.method} {exc.url}: {exc.response.status_code}",
+            errors=errors,
         )
         return JSONResponse(status_code=exc.response.status_code, content=content)
 

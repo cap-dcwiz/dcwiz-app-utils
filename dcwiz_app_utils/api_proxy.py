@@ -118,7 +118,7 @@ class APIProxy:
             res = await client.request(method, full_url, *args, **kwargs)
             if res.status_code != 200:
                 logging.error(f"API Error: {method} {full_url}: {res.status_code}")
-                logging.error(res.text)
+                logging.debug(res.text)
                 raise exception_class(method=method, url=full_url, response=res)
 
         return res.json()
