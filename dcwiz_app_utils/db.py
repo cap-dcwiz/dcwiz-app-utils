@@ -1,11 +1,38 @@
 from contextlib import contextmanager, asynccontextmanager
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from redis import Redis
+from sqlalchemy import create_engine, select
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-DBBase = declarative_base()
+_DBBase = declarative_base()
+
+
+class DBBase(_DBBase):
+    @classmethod
+    async def get(cls, session, **query):
+        q = select(cls).filter_by(**query)
+        result = await session.execute(q)
+        return result.scalars().first()
+
+    async def update(self, session, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+        session.add(self)
+        await session.commit()
+        await session.refresh(self)
+
+    @classmethod
+    async def add(cls, session, **kwargs):
+        obj = cls(**kwargs)
+        session.add(obj)
+        await session.commit()
+        await session.refresh(obj)
+        return obj
+
+    async def delete(self, session):
+        session.delete(self)
+        await session.commit()
 
 
 class WithDB:
