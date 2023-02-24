@@ -12,7 +12,7 @@ from .error import (
     DCWizAPIException,
     DCWizServiceException,
     Error,
-    ErrorSeverity,
+    ErrorSeverity, DCWizAuthException,
 )
 from httpx import AsyncClient, Response, BasicAuth
 import pandas as pd
@@ -63,7 +63,7 @@ class APIProxy:
         "data": "utinni",
         "utinni": "utinni",
         "service": "service",
-        "auth": "service",
+        "auth": "auth",
     }
 
     def __init__(
@@ -218,6 +218,10 @@ class APIProxy:
         )
         return await self.request(method, url, *args, **kwargs)
 
+    async def auth_request(self, method, url, *args, **kwargs):
+        kwargs["exception_class"] = kwargs.get("exception_class", DCWizAuthException)
+        return await self.request(method, url, *args, **kwargs)
+
     async def parallel_request(
         self,
         requests: Union[dict, list],
@@ -247,6 +251,15 @@ class APIProxy:
     ):
         return await self._parallel(
             requests, request_method=self.service_request, **kwargs
+        )
+
+    async def auth_parallel_request(
+        self,
+        requests: Union[dict, list],
+        **kwargs,
+    ):
+        return await self._parallel(
+            requests, request_method=self.auth_request, **kwargs
         )
 
     @staticmethod

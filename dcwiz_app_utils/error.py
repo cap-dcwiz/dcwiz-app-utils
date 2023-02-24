@@ -107,6 +107,21 @@ class DCWizServiceAPIException(DCWizAPIException):
         return JSONResponse(status_code=exc.response.status_code, content=content)
 
 
+class DCWizAuthException(DCWizAPIException):
+    @staticmethod
+    async def exception_handler(_, exc):
+        if exc.response.status_code == 401:
+            message = "Not Authenticated, please login."
+        else:
+            message = "Not Authorized, use a different account."
+        error = exc.response.json()
+        content = dict(
+            message=exc.message or message,
+            errors=[Error(**e).dict() for e in error["errors"]],
+        )
+        return JSONResponse(status_code=exc.response.status_code, content=content)
+
+
 async def http_exception_handler(_, exc):
     content = dict(
         message=str(exc.detail),
@@ -134,5 +149,8 @@ def setup_exception_handlers(app):
     )
     app.add_exception_handler(
         DCWizServiceAPIException, DCWizServiceAPIException.exception_handler
+    )
+    app.add_exception_handler(
+        DCWizAuthException, DCWizAuthException.exception_handler
     )
     app.add_exception_handler(HTTPException, http_exception_handler)
