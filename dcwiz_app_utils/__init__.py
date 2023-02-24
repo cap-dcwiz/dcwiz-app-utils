@@ -12,4 +12,4 @@ from .db import (
 )
 from .error import ErrorSeverity, Error, DCWizServiceException
 from .api_proxy import APIProxy, get_api_proxy
-from .response import ORMLinkedSchema, wrap_response
+from .response import ResponseSchema, wrap_response
