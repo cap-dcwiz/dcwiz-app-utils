@@ -8,7 +8,7 @@ def get_url_from_env():
     user = os.getenv("POSTGRES_USER", "postgres")
     password = os.getenv("POSTGRES_PASSWORD", "postgres")
     db = os.getenv("POSTGRES_DB", "dcwiz_auth")
-    return f"postgresql://{user}:{password}@{server}/{db}"
+    return f"postgresql+asyncpg://{user}:{password}@{server}/{db}"
 
 
 def get_url():
