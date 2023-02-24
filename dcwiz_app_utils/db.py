@@ -5,10 +5,10 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-_DBBase = declarative_base()
+DBBase = declarative_base()
 
 
-class DBBase(_DBBase):
+class DBMixin:
     @classmethod
     async def get(cls, session, **query):
         q = select(cls).filter_by(**query)

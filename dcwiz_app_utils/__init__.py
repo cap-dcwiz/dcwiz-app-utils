@@ -3,6 +3,7 @@ from .auth import get_auth_service_client
 from .cli import create_cli_main
 from .db import (
     DBBase,
+    DBMixin,
     WithDB,
     WithAsyncDB,
     db_session_from_config,
