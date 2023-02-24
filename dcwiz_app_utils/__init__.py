@@ -10,6 +10,6 @@ from .db import (
     async_db_session_from_config,
     redis_from_config,
 )
-from .error import ErrorSeverity, Error, DCWizException
-from .platform import PlatformClient, get_platform_client
+from .error import ErrorSeverity, Error, DCWizServiceException
+from .api_proxy import APIProxy, get_api_proxy
 from .response import ORMLinkedSchema, wrap_response

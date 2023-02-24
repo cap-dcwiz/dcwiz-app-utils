@@ -1,12 +1,10 @@
-from fastapi import HTTPException
-
-from .platform import PlatformClient
+from .api_proxy import APIProxy
 
 
 class AuthServiceClient:
     def __init__(self, auth_url: str):
         self.auth_url = auth_url
-        self.platform_client = PlatformClient(base_url=auth_url)
+        self.api_proxy = APIProxy(base_url=auth_url)
 
     @classmethod
     def from_config(cls, config=None):
@@ -28,17 +26,9 @@ class AuthServiceClient:
         res = dict(data_halls=[], chiller_plants=[])
         if not bearer:
             return res
-        resp = await self.platform_client.get(
-            "/authz/objects", bearer=bearer, expected_status_codes=(200, 401, 403)
-        )
+        resp = await self.api_proxy.auth.get("/authz/objects", bearer=bearer)
 
-        if resp.status_code == 401:
-            raise HTTPException(status_code=401, detail="Authorization failed")
-
-        if resp.status_code == 403:
-            raise HTTPException(status_code=403, detail="Not authorized")
-
-        for item in resp.json():
+        for item in resp:
             if item.startswith("data_hall."):
                 res["data_halls"].append(int(item.split(".")[1]))
             elif item.startswith("chiller_plant."):

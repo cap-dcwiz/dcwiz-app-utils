@@ -5,7 +5,7 @@ from fastapi import HTTPException, FastAPI, APIRouter as APIRouterBase
 from dynaconf import Dynaconf
 
 from .response import wrap_response
-from .error import http_exception_handler, dcwiz_exception_handler, DCWizException
+
 
 config: Dynaconf = NotImplemented
 
@@ -20,11 +20,6 @@ def get_config() -> Dynaconf:
 def set_config(_config: Dynaconf):
     global config
     config = _config
-
-
-def setup_app(app: FastAPI):
-    app.add_exception_handler(HTTPException, http_exception_handler)
-    app.add_exception_handler(DCWizException, dcwiz_exception_handler)
 
 
 def get_router_maps(_path, _name):
