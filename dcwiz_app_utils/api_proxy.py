@@ -158,7 +158,7 @@ class APIProxy:
         if isinstance(requests, list):
             async with self.client(bearer=bearer) as client:
                 async with asyncio.TaskGroup() as tg:
-                    return [
+                    tasks = [
                         tg.create_task(
                             request_method(
                                 method,
@@ -171,10 +171,11 @@ class APIProxy:
                         )
                         for method, url, kwargs in requests
                     ]
+                return [t.result() for t in tasks]
         elif isinstance(requests, dict):
             async with self.client(bearer=bearer) as client:
                 async with asyncio.TaskGroup() as tg:
-                    return {
+                    tasks = {
                         k: tg.create_task(
                             request_method(
                                 method,
@@ -187,6 +188,7 @@ class APIProxy:
                         )
                         for k, (method, url, kwargs) in requests.items()
                     }
+                return {k: t.result() for k, t in tasks.items()}
         else:
             raise DCWizServiceException(
                 message="Internal Error",

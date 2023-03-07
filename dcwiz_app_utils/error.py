@@ -18,10 +18,20 @@ class ErrorSeverity(str, Enum):
 class Error(BaseModel):
     type: str = Field(..., description="Error type")
     severity: ErrorSeverity = Field(ErrorSeverity.ERROR, description="Error severity")
-    message: str = Field(None, description="Error message")
+    message: str | dict = Field(None, description="Error message")
 
 
-class DCWizServiceException(Exception):
+class DCWizException(Exception):
+    @staticmethod
+    async def exception_handler_and_response(_, exc):
+        return JSONResponse(**self.exception_handler(_, exc))
+
+    @staticmethod
+    async def exception_handler(_, exc):
+        raise NotImplementedError("Must be implemented by subclass")
+
+
+class DCWizServiceException(DCWizException):
     def __init__(self, message=None, errors=None):
         super().__init__()
         self.message = message
@@ -34,10 +44,10 @@ class DCWizServiceException(Exception):
         )
         if exc.errors:
             content["errors"] = exc.errors
-        return JSONResponse(status_code=500, content=content)
+        return dict(status_code=500, content=content)
 
 
-class DCWizAPIException(Exception):
+class DCWizAPIException(DCWizException):
     def __init__(self, method, url, response: HttpxResponse, message=None):
         super().__init__()
         self.method = method
@@ -49,7 +59,7 @@ class DCWizAPIException(Exception):
     async def exception_handler(_, exc):
         status_code = exc.response.status_code
         content = dict(
-            message=exc.message or f"API Error: {exc.method} {exc.url}: {status_code}",
+            message=exc.message or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
             errors=[
                 Error(
                     type="API Error",
@@ -58,7 +68,7 @@ class DCWizAPIException(Exception):
                 ).dict()
             ],
         )
-        return JSONResponse(status_code=status_code, content=content)
+        return dict(status_code=status_code, content=content)
 
 
 class DCWizPlatformAPIException(DCWizAPIException):
@@ -70,14 +80,14 @@ class DCWizPlatformAPIException(DCWizAPIException):
         except JSONDecodeError:
             error = exc.response.text
         content = dict(
-            message=exc.message or f"API Error: {exc.method} {exc.url}: {status_code}",
+            message=exc.message or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
             errors=[
                 Error(
                     type="API Error", severity=ErrorSeverity.ERROR, message=error
                 ).dict()
             ],
         )
-        return JSONResponse(status_code=status_code, content=content)
+        return dict(status_code=status_code, content=content)
 
 
 class DCWizDataAPIException(DCWizAPIException):
@@ -102,7 +112,7 @@ class DCWizDataAPIException(DCWizAPIException):
             or f"Data Error: {exc.method} {exc.url}: {exc.response.status_code}",
             errors=errors,
         )
-        return JSONResponse(status_code=exc.response.status_code, content=content)
+        return dict(status_code=exc.response.status_code, content=content)
 
 
 class DCWizServiceAPIException(DCWizAPIException):
@@ -114,7 +124,7 @@ class DCWizServiceAPIException(DCWizAPIException):
         )
         if "errors" in error:
             content["errors"] = [Error(**e).dict() for e in error["errors"]]
-        return JSONResponse(status_code=exc.response.status_code, content=content)
+        return dict(status_code=exc.response.status_code, content=content)
 
 
 class DCWizAuthException(DCWizAPIException):
@@ -123,14 +133,14 @@ class DCWizAuthException(DCWizAPIException):
         if exc.response.status_code == 401:
             message = "Not Authenticated, please login."
         else:
-            message = "Not Authorized, use a different account."
+            message = "Not Authorized, please use a different account."
         error = exc.response.json()
         content = dict(
             message=exc.message or message,
         )
         if "errors" in error:
             content["errors"] = [Error(**e).dict() for e in error["errors"]]
-        return JSONResponse(status_code=exc.response.status_code, content=content)
+        return dict(status_code=exc.response.status_code, content=content)
 
 
 async def http_exception_handler(_, exc):
@@ -145,6 +155,30 @@ async def http_exception_handler(_, exc):
         ],
     )
     return JSONResponse(status_code=exc.status_code, content=content)
+
+async def exception_group_handler(_, exc):
+    errors = []
+    for inner_exc in exc.exceptions:
+        if isinstance(inner_exc, DCWizAPIException) or isinstance(inner_exc, DCWizServiceException):
+            result = await inner_exc.exception_handler(_, inner_exc)
+            summary = result["content"]["message"]
+            inner_errors = result["content"]["errors"]
+            for error in inner_errors:
+                error["message"] = f"{summary}: {error['message']}"
+            errors.extend(inner_errors)
+        else:
+            errors.append(
+                Error(
+                    type="ExceptionGroup",
+                    message=str(inner_exc),
+                    severity=ErrorSeverity.ERROR,
+                ).dict()
+            )
+    content = dict(
+        message=str(exc.message),
+        errors=errors,
+    )
+    return JSONResponse(status_code=500, content=content)
 
 
 def setup_exception_handlers(app):
@@ -165,3 +199,4 @@ def setup_exception_handlers(app):
         DCWizAuthException, DCWizAuthException.exception_handler
     )
     app.add_exception_handler(HTTPException, http_exception_handler)
+    app.add_exception_handler(ExceptionGroup, exception_group_handler)
