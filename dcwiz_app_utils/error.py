@@ -22,12 +22,12 @@ class Error(BaseModel):
 
 
 class DCWizException(Exception):
-    @staticmethod
-    async def exception_handler_and_response(_, exc):
-        return JSONResponse(**self.exception_handler(_, exc))
+    @classmethod
+    async def exception_handler_and_response(cls, _, exc):
+        return JSONResponse(**await cls.exception_handler(_, exc))
 
-    @staticmethod
-    async def exception_handler(_, exc):
+    @classmethod
+    async def exception_handler(cls, _, exc):
         raise NotImplementedError("Must be implemented by subclass")
 
 
@@ -183,20 +183,20 @@ async def exception_group_handler(_, exc):
 
 def setup_exception_handlers(app):
     app.add_exception_handler(
-        DCWizServiceException, DCWizServiceException.exception_handler
+        DCWizServiceException, DCWizServiceException.exception_handler_and_response
     )
-    app.add_exception_handler(DCWizAPIException, DCWizAPIException.exception_handler)
+    app.add_exception_handler(DCWizAPIException, DCWizAPIException.exception_handler_and_response)
     app.add_exception_handler(
-        DCWizPlatformAPIException, DCWizPlatformAPIException.exception_handler
-    )
-    app.add_exception_handler(
-        DCWizDataAPIException, DCWizDataAPIException.exception_handler
+        DCWizPlatformAPIException, DCWizPlatformAPIException.exception_handler_and_response
     )
     app.add_exception_handler(
-        DCWizServiceAPIException, DCWizServiceAPIException.exception_handler
+        DCWizDataAPIException, DCWizDataAPIException.exception_handler_and_response
     )
     app.add_exception_handler(
-        DCWizAuthException, DCWizAuthException.exception_handler
+        DCWizServiceAPIException, DCWizServiceAPIException.exception_handler_and_response
+    )
+    app.add_exception_handler(
+        DCWizAuthException, DCWizAuthException.exception_handler_and_response
     )
     app.add_exception_handler(HTTPException, http_exception_handler)
     app.add_exception_handler(ExceptionGroup, exception_group_handler)
