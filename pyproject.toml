@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dcwiz-app-utils"
-version = "0.3.1"
+version = "0.3.2"
 description = ""
 authors = ["Zhu Zhaomeng <zhaomeng.zhu@ntu.edu.sg>"]
 license = "MIT"
@@ -29,3 +29,6 @@ black = {extras = ["d"], version = "^23.1.0"}
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+dcwiz-app-token-helper = "dcwiz_app_utils.tools.token:main"
