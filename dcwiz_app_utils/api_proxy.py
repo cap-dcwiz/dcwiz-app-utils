@@ -107,6 +107,7 @@ class APIProxy:
         bearer=None,
         client=None,
         exception_class=DCWizAPIException,
+        expect_json=True,
         **kwargs,
     ):
         if "://" in url:
@@ -121,7 +122,10 @@ class APIProxy:
                 logger.debug(res.text)
                 raise exception_class(method=method, url=full_url, response=res)
 
-        return res.json()
+        if expect_json:
+            return res.json()
+        else:
+            return res.content
 
     @staticmethod
     def _merge_dataframe(df, on: str = None):
