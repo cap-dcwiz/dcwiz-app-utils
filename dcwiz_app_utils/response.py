@@ -1,11 +1,12 @@
 from functools import wraps
+from inspect import isclass
 from types import GenericAlias
 
 from typing import Type, get_origin, get_args
 
 import pydantic
 from pydantic import BaseModel, Field
-from fastapi.responses import FileResponse
+from starlette.responses import Response
 
 from .error import Error
 
@@ -58,7 +59,7 @@ def wrap_response(message=None):
     def wrapper(func):
         ret_type = func.__annotations__.get("return")
 
-        if not (issubclass(ret_type, BaseModel) or ret_type is None):
+        if isclass(ret_type) and issubclass(ret_type, Response):
             return func
 
         response_model = response_wrapper(ret_type)

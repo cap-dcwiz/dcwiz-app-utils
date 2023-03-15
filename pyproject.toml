@@ -10,10 +10,8 @@ packages = [{include = "dcwiz_app_utils"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 sqlalchemy = "^2.0.3"
-uvicorn = "^0.20.0"
 typer = "^0.7.0"
 dynaconf = "^3.1.11"
-fastapi = "^0.92.0"
 alembic = "^1.9.3"
 httpx = "^0.23.3"
 pandas = "^1.5.3"
@@ -21,6 +19,8 @@ cachetools = "^5.3.0"
 asyncache = "^0.3.1"
 redis = "^4.5.1"
 loguru = "^0.6.0"
+fastapi = "^0.94.1"
+uvicorn = "^0.21.0"
 
 
 [tool.poetry.group.dev.dependencies]
