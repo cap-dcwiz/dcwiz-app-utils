@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dcwiz-app-utils"
-version = "0.3.4"
+version = "0.3.5"
 description = ""
 authors = ["Zhu Zhaomeng <zhaomeng.zhu@ntu.edu.sg>"]
 license = "MIT"
@@ -21,6 +21,7 @@ redis = "^4.5.1"
 loguru = "^0.6.0"
 fastapi = "^0.94.1"
 uvicorn = "^0.21.0"
+aiofiles = "^23.1.0"
 
 
 [tool.poetry.group.dev.dependencies]

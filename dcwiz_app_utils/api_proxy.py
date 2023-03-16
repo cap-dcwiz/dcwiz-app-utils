@@ -1,6 +1,8 @@
 import asyncio
 import contextlib
 import json
+import aiofiles
+
 from loguru import logger
 from random import uniform
 from typing import Union
@@ -14,7 +16,7 @@ from .error import (
     Error,
     ErrorSeverity, DCWizAuthException,
 )
-from httpx import AsyncClient, Response, BasicAuth
+from httpx import AsyncClient, BasicAuth
 import pandas as pd
 from cachetools import TTLCache, cached
 from cachetools.keys import hashkey
@@ -42,6 +44,20 @@ class _Alias:
             )
         else:
             return self.parent.parallel_request(*args, **kwargs)
+
+    def stream(self, *args, filename, **kwargs):
+        if self.name:
+            return getattr(self.parent, f"{self.name}_stream")(*args, file=filename, **kwargs)
+        else:
+            return self.parent.stream(*args, filename=filename, **kwargs)
+
+    def parallel_stream(self, *args, **kwargs):
+        if self.name:
+            return getattr(self.parent, f"{self.name}_parallel_stream")(
+                *args, **kwargs
+            )
+        else:
+            return self.parent.parallel_stream(*args, **kwargs)
 
     def get(self, *args, **kwargs):
         return self.request("GET", *args, **kwargs)
@@ -127,6 +143,35 @@ class APIProxy:
         else:
             return res.content
 
+    async def _stream(
+            self,
+            method,
+            url,
+            *args,
+            filename,
+            bearer=None,
+            client=None,
+            exception_class=DCWizAPIException,
+            **kwargs,
+    ):
+        if "://" in url:
+            full_url = url
+        else:
+            full_url = f"{self.base_url}{url}"
+
+        async with self.client(client, bearer) as client:
+            async with client.stream(method, full_url, *args, **kwargs) as res:
+                if res.status_code != 200:
+                    raise exception_class(method=method, url=full_url, response=res)
+
+                length = 0
+                async with aiofiles.open(filename, "wb") as f:
+                    async for data in res.aiter_bytes():
+                        length += len(data)
+                        await f.write(data)
+
+        return length
+
     @staticmethod
     def _merge_dataframe(df, on: str = None):
         if isinstance(df, dict):
@@ -211,6 +256,12 @@ class APIProxy:
         )
         return await self._request(method, url, *args, **kwargs)
 
+    async def stream(self, method, url, *args, filename, **kwargs):
+        kwargs["exception_class"] = kwargs.get(
+            "exception_class", DCWizPlatformAPIException
+        )
+        return await self._stream(method, url, *args, filename=filename, **kwargs)
+
     async def utinni_request(self, method, url, *args, as_dataframe=False, **kwargs):
         kwargs["exception_class"] = kwargs.get("exception_class", DCWizDataAPIException)
         res = await self.request(method, url, *args, **kwargs)
@@ -235,6 +286,14 @@ class APIProxy:
         **extra_kwargs,
     ):
         return await self._parallel(requests, bearer, self.request, **extra_kwargs)
+
+    async def parallel_stream(
+        self,
+        requests: Union[dict, list],
+        bearer=None,
+        **extra_kwargs,
+    ):
+        return await self._parallel(requests, bearer, self.stream, **extra_kwargs)
 
     async def utinni_parallel_request(
         self,
