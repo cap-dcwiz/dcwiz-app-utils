@@ -28,7 +28,7 @@ class AuthServiceClient:
             return res
         resp = await self.api_proxy.auth.get("/authz/objects", bearer=bearer)
 
-        for item in resp:
+        for item in resp["result"]:
             if item.startswith("data_hall."):
                 res["data_halls"].append(int(item.split(".")[1]))
             elif item.startswith("chiller_plant."):
