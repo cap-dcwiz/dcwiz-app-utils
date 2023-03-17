@@ -15,6 +15,12 @@ class DBMixin:
         result = await session.execute(q)
         return result.scalars().first()
 
+    @classmethod
+    async def list(cls, session, **query):
+        q = select(cls).filter_by(**query)
+        result = await session.execute(q)
+        return result.scalars().all()
+
     async def update(self, session, **kwargs):
         for k, v in kwargs.items():
             setattr(self, k, v)

@@ -156,6 +156,7 @@ async def http_exception_handler(_, exc):
     )
     return JSONResponse(status_code=exc.status_code, content=content)
 
+
 async def exception_group_handler(_, exc):
     errors = []
     for inner_exc in exc.exceptions:

@@ -1,7 +1,7 @@
 import pkgutil
 from importlib import import_module
 
-from fastapi import HTTPException, FastAPI, APIRouter as APIRouterBase
+from fastapi import APIRouter as APIRouterBase
 from dynaconf import Dynaconf
 
 from .response import wrap_response
