@@ -54,7 +54,7 @@ async def index():
 
 @app.get("/login")
 async def login(request: Request):
-    redirect_uri = request.url_for("auth")
+    redirect_uri = str(request.url_for("auth"))
     return await app.get_oauth().keycloak.authorize_redirect(request, redirect_uri)
 
 
