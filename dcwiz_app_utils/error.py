@@ -1,5 +1,5 @@
 from enum import Enum
-from http.client import HTTPException
+from fastapi import HTTPException
 from json import JSONDecodeError
 
 from pydantic import BaseModel, Field
