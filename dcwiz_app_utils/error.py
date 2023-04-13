@@ -4,7 +4,7 @@ from json import JSONDecodeError
 
 from pydantic import BaseModel, Field
 from fastapi.responses import JSONResponse
-from httpx import Response as HttpxResponse
+from httpx import Response as HttpxResponse, ConnectError
 
 
 class ErrorSeverity(str, Enum):
@@ -59,7 +59,8 @@ class DCWizAPIException(DCWizException):
     async def exception_handler(_, exc):
         status_code = exc.response.status_code
         content = dict(
-            message=exc.message or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
+            message=exc.message
+            or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
             errors=[
                 Error(
                     type="API Error",
@@ -80,7 +81,8 @@ class DCWizPlatformAPIException(DCWizAPIException):
         except JSONDecodeError:
             error = exc.response.text
         content = dict(
-            message=exc.message or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
+            message=exc.message
+            or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
             errors=[
                 Error(
                     type="API Error", severity=ErrorSeverity.ERROR, message=error
@@ -98,20 +100,26 @@ class DCWizDataAPIException(DCWizAPIException):
             if isinstance(error["detail"], list):
                 errors = [
                     Error(
-                        type="Data Error", severity=ErrorSeverity.ERROR, message=f"{k}:{v}"
+                        type="Data Error",
+                        severity=ErrorSeverity.ERROR,
+                        message=f"{k}:{v}",
                     ).dict()
                     for k, v in error["detail"]
                 ]
             else:
                 errors = [
                     Error(
-                        type="Data Error", severity=ErrorSeverity.ERROR, message=str(error["detail"])
+                        type="Data Error",
+                        severity=ErrorSeverity.ERROR,
+                        message=str(error["detail"]),
                     ).dict()
                 ]
         except JSONDecodeError:
             errors = [
                 Error(
-                    type="API Error", severity=ErrorSeverity.ERROR, message=exc.response.text
+                    type="API Error",
+                    severity=ErrorSeverity.ERROR,
+                    message=exc.response.text,
                 ).dict()
             ]
         content = dict(
@@ -152,12 +160,13 @@ class DCWizAuthException(DCWizAPIException):
 
 
 async def http_exception_handler(_, exc):
+    message = str(exc.detail)
     content = dict(
-        message=str(exc.detail),
+        message=message,
         errors=[
             Error(
-                type="HTTPException",
-                message=str(exc.detail),
+                type="HTTP Error",
+                message=message,
                 severity=ErrorSeverity.ERROR,
             ).dict()
         ],
@@ -165,10 +174,26 @@ async def http_exception_handler(_, exc):
     return JSONResponse(status_code=exc.status_code, content=content)
 
 
+async def connect_error_handler(request, exc):
+    content = dict(
+        message="Connection Error",
+        errors=[
+            Error(
+                type="Connection Error",
+                message=f"{str(exc)}: {request.url}",
+                severity=ErrorSeverity.ERROR,
+            ).dict()
+        ],
+    )
+    return JSONResponse(status_code=500, content=content)
+
+
 async def exception_group_handler(_, exc):
     errors = []
     for inner_exc in exc.exceptions:
-        if isinstance(inner_exc, DCWizAPIException) or isinstance(inner_exc, DCWizServiceException):
+        if isinstance(inner_exc, DCWizAPIException) or isinstance(
+            inner_exc, DCWizServiceException
+        ):
             result = await inner_exc.exception_handler(_, inner_exc)
             summary = result["content"]["message"]
             inner_errors = result["content"].get("errors", [])
@@ -202,18 +227,23 @@ def setup_exception_handlers(app):
     app.add_exception_handler(
         DCWizServiceException, DCWizServiceException.exception_handler_and_response
     )
-    app.add_exception_handler(DCWizAPIException, DCWizAPIException.exception_handler_and_response)
     app.add_exception_handler(
-        DCWizPlatformAPIException, DCWizPlatformAPIException.exception_handler_and_response
+        DCWizAPIException, DCWizAPIException.exception_handler_and_response
+    )
+    app.add_exception_handler(
+        DCWizPlatformAPIException,
+        DCWizPlatformAPIException.exception_handler_and_response,
     )
     app.add_exception_handler(
         DCWizDataAPIException, DCWizDataAPIException.exception_handler_and_response
     )
     app.add_exception_handler(
-        DCWizServiceAPIException, DCWizServiceAPIException.exception_handler_and_response
+        DCWizServiceAPIException,
+        DCWizServiceAPIException.exception_handler_and_response,
     )
     app.add_exception_handler(
         DCWizAuthException, DCWizAuthException.exception_handler_and_response
     )
     app.add_exception_handler(HTTPException, http_exception_handler)
+    app.add_exception_handler(ConnectError, connect_error_handler)
     app.add_exception_handler(ExceptionGroup, exception_group_handler)

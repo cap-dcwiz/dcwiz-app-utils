@@ -17,10 +17,9 @@ class App(FastAPI):
         self.client_secret = None
         self.token_cache = None
 
-    def init(self,
-             auth_base: str = None,
-             client_id: str = None,
-             client_secret: str = None):
+    def init(
+        self, auth_base: str = None, client_id: str = None, client_secret: str = None
+    ):
         self.auth_base = auth_base
         self.client_id = client_id
         self.client_secret = client_secret
@@ -126,6 +125,6 @@ def main():
     app.init(
         auth_base=os.environ.get("AUTH_BASE", "https://auth.experimental.rda.ai"),
         client_id=os.environ.get("AUTH_CLIENT_ID", "dcwiz-client"),
-        client_secret=os.environ.get("AUTH_CLIENT_SECRET", "")
+        client_secret=os.environ.get("AUTH_CLIENT_SECRET", ""),
     )
     uvicorn.run(app, host="127.0.0.1", port=10010)

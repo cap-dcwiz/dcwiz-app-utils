@@ -14,7 +14,8 @@ from .error import (
     DCWizAPIException,
     DCWizServiceException,
     Error,
-    ErrorSeverity, DCWizAuthException,
+    ErrorSeverity,
+    DCWizAuthException,
 )
 from httpx import AsyncClient, BasicAuth
 import pandas as pd
@@ -47,15 +48,15 @@ class _Alias:
 
     def stream(self, *args, filename, **kwargs):
         if self.name:
-            return getattr(self.parent, f"{self.name}_stream")(*args, file=filename, **kwargs)
+            return getattr(self.parent, f"{self.name}_stream")(
+                *args, file=filename, **kwargs
+            )
         else:
             return self.parent.stream(*args, filename=filename, **kwargs)
 
     def parallel_stream(self, *args, **kwargs):
         if self.name:
-            return getattr(self.parent, f"{self.name}_parallel_stream")(
-                *args, **kwargs
-            )
+            return getattr(self.parent, f"{self.name}_parallel_stream")(*args, **kwargs)
         else:
             return self.parent.parallel_stream(*args, **kwargs)
 
@@ -144,15 +145,15 @@ class APIProxy:
             return res.content
 
     async def _stream(
-            self,
-            method,
-            url,
-            *args,
-            filename,
-            bearer=None,
-            client=None,
-            exception_class=DCWizAPIException,
-            **kwargs,
+        self,
+        method,
+        url,
+        *args,
+        filename,
+        bearer=None,
+        client=None,
+        exception_class=DCWizAPIException,
+        **kwargs,
     ):
         if "://" in url:
             full_url = url
