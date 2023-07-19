@@ -35,6 +35,13 @@ class AuthServiceClient:
                 res["chiller_plants"].append(int(item.split(".")[1]))
         return res
 
+    async def get_self_profile(self, bearer: str = None, request=None):
+        if not bearer and request:
+            bearer = self.extract_bearer(request)
+        if not bearer:
+            return {}
+        return await self.api_proxy.auth.get("/user/profile", bearer=bearer)
+
 
 def get_auth_service_client(config=None):
     return AuthServiceClient.from_config(config)

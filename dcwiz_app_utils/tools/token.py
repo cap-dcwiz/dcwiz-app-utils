@@ -51,9 +51,14 @@ async def index():
     return RedirectResponse(url="/docs")
 
 
-@app.get("/login")
+@app.get(
+    "/login",
+    description="Note: this call may fail due to CORS policy when called from Swagger UI. "
+    "In that case, please access 'http://localhost:10010/login' directly in your browser and then "
+    "jump back to Swagger UI. If error still persists, please try in an fresh incognito window.",
+)
 async def login(request: Request):
-    redirect_uri = str(request.url_for("auth"))
+    redirect_uri = request.url_for("auth")
     return await app.get_oauth().keycloak.authorize_redirect(request, redirect_uri)
 
 
