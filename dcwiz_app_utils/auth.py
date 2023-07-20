@@ -40,7 +40,7 @@ class AuthServiceClient:
             bearer = self.extract_bearer(request)
         if not bearer:
             return {}
-        return await self.api_proxy.auth.get("/user/profile", bearer=bearer)
+        return await self.api_proxy.auth.get("/users/profile", bearer=bearer)
 
 
 def get_auth_service_client(config=None):
