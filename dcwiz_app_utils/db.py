@@ -37,7 +37,7 @@ class DBMixin:
         return obj
 
     async def delete(self, session):
-        session.delete(self)
+        await session.delete(self)
         await session.commit()
 
 
