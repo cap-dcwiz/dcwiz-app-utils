@@ -1,6 +1,8 @@
 import asyncio
 import contextlib
 import json
+import logging
+
 import aiofiles
 
 from loguru import logger
@@ -372,8 +374,12 @@ class APIProxy:
             auth_info = BasicAuth(username, config.platform.password)
         else:
             auth_info = None
+        base_url = config.get("platform.base_url")
+        if not base_url:
+            logging.error("platform.base_url is empty")
+            raise ValueError("APIProxy base_url cannot be empty")
         return cls(
-            base_url=config.get("platform.base_url"),
+            base_url=base_url,
             cache_ttl=config.get("platform.cache_ttl", 120),
             cache_ttl_var=config.get("platform.cache_ttl_var", 60),
             timeout=config.get("platform.timeout", 60),

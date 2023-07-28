@@ -1,8 +1,13 @@
+import logging
+
 from .api_proxy import APIProxy
 
 
 class AuthServiceClient:
     def __init__(self, auth_url: str):
+        if not auth_url:
+            logging.error("auth_url is empty")
+            raise ValueError("APIProxy base_url cannot be empty")
         self.auth_url = auth_url
         self.api_proxy = APIProxy(base_url=auth_url)
 
