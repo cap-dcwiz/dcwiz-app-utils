@@ -68,10 +68,11 @@ def wrap_response(message=None):
         @wraps(func)
         async def wrapped(*args, **kwargs):
             result = await func(*args, **kwargs)
+            display_message = message if message is not None else ""
             if ret_type is None:
-                return response_model(message=message)
+                return response_model(message=display_message)
             else:
-                return response_model(message=message, result=result)
+                return response_model(message=display_message, result=result)
 
         return wrapped
 
