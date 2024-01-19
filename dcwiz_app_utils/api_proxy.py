@@ -70,6 +70,9 @@ class _Alias:
 
     def put(self, *args, **kwargs):
         return self.request("PUT", *args, **kwargs)
+    
+    def patch(self, *args, **kwargs):
+        return self.request("PATCH", *args, **kwargs)
 
     def delete(self, *args, **kwargs):
         return self.request("DELETE", *args, **kwargs)
