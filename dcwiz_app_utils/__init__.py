@@ -1,5 +1,5 @@
 from .app import get_config, get_router_maps, APIRouter
-from .auth import get_auth_service_client
+from .auth import get_auth_service_client, get_app_or_auth_service_client
 from .cli import create_cli_main
 from .db import (
     DBBase,
