@@ -70,7 +70,7 @@ class _Alias:
 
     def put(self, *args, **kwargs):
         return self.request("PUT", *args, **kwargs)
-    
+
     def patch(self, *args, **kwargs):
         return self.request("PATCH", *args, **kwargs)
 
@@ -80,12 +80,13 @@ class _Alias:
 
 class APIProxy:
     ALIASES = {
-        "api": None,
-        "platform": None,
-        "data": "utinni",
-        "utinni": "utinni",
-        "service": "service",
-        "auth": "auth",
+        "api": None,  # platform API, for backward compatibility only
+        "platform": None,  # platform API
+        "data": "utinni",  # platform data API, alias
+        "utinni": "utinni",  # platform data API, alias
+        "service": "service",  # other application, for backward compatibility only
+        "app": "service",  # other application
+        "auth": "auth",  # authentication service
     }
 
     def __init__(

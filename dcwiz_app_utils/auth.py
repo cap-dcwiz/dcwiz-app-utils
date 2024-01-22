@@ -3,13 +3,16 @@ import logging
 from .api_proxy import APIProxy
 
 
-class AuthServiceClient:
+class AppOrAuthServiceClient:
     def __init__(self, auth_url: str):
         if not auth_url:
             logging.error("auth_url is empty")
             raise ValueError("APIProxy base_url cannot be empty")
         self.auth_url = auth_url
         self.api_proxy = APIProxy(base_url=auth_url)
+
+    def __getattr__(self, item):
+        return getattr(self.api_proxy, item)
 
     @classmethod
     def from_config(cls, config=None):
@@ -48,5 +51,14 @@ class AuthServiceClient:
         return await self.api_proxy.auth.get("/users/profile", bearer=bearer)
 
 
+def get_app_or_auth_service_client(config=None):
+    return AppOrAuthServiceClient.from_config(config)
+
+
 def get_auth_service_client(config=None):
-    return AuthServiceClient.from_config(config)
+    """
+    Deprecated. Use get_app_or_auth_service_client instead.
+    :param config:
+    :return:
+    """
+    return AppOrAuthServiceClient.from_config(config)
