@@ -32,19 +32,20 @@ class DCWizException(Exception):
 
 
 class DCWizServiceException(DCWizException):
-    def __init__(self, message=None, errors=None):
+    def __init__(self, message=None, errors=None, status_code=500):
         super().__init__()
         self.message = message
         self.errors = errors
+        self.status_code = status_code
 
     @staticmethod
-    async def exception_handler(_, exc):
+    async def exception_handler(_, exc, **kwargs):
         content = dict(
             message=exc.message or "Internal Service Error",
         )
         if exc.errors:
             content["errors"] = exc.errors
-        return dict(status_code=500, content=content)
+        return dict(status_code=exc.status_code, content=content)
 
 
 class DCWizAPIException(DCWizException):
@@ -60,7 +61,7 @@ class DCWizAPIException(DCWizException):
         status_code = exc.response.status_code
         content = dict(
             message=exc.message
-            or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
+                    or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
             errors=[
                 Error(
                     type="API Error",
@@ -82,7 +83,7 @@ class DCWizPlatformAPIException(DCWizAPIException):
             error = exc.response.text
         content = dict(
             message=exc.message
-            or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
+                    or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
             errors=[
                 Error(
                     type="API Error", severity=ErrorSeverity.ERROR, message=error
@@ -124,7 +125,7 @@ class DCWizDataAPIException(DCWizAPIException):
             ]
         content = dict(
             message=exc.message
-            or f"Data Error: {exc.method} {exc.url}: {exc.response.status_code}",
+                    or f"Data Error: {exc.method} {exc.url}: {exc.response.status_code}",
             errors=errors,
         )
         return dict(status_code=exc.response.status_code, content=content)
@@ -192,7 +193,7 @@ async def exception_group_handler(_, exc):
     errors = []
     for inner_exc in exc.exceptions:
         if isinstance(inner_exc, DCWizAPIException) or isinstance(
-            inner_exc, DCWizServiceException
+                inner_exc, DCWizServiceException
         ):
             result = await inner_exc.exception_handler(_, inner_exc)
             summary = result["content"]["message"]
