@@ -19,12 +19,14 @@ jobs:
       - name: Run safety
         env:
           SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
+        id: run_safety
         run: |
           set +e
-          safety --stage cicd scan --detailed-output > CI_safety_report.txt
-          exit_code=$?
-          cat CI_safety_report.txt
-          exit $exit_code
+          out=$(safety --stage cicd scan --detailed-output)
+          err=$?
+          echo - "$out"
+          echo - "$out" > CI_safety_report.txt
+          exit $?
 
       - name: Comment with safety results
         uses: mshick/add-pr-comment@v2.8.2
