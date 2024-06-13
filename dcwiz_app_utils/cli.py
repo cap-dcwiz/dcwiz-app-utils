@@ -14,7 +14,7 @@ def create_cli_main(
     make_app: Callable[[...], FastAPI],
     envvar_prefix: str = "DCWIZ_APP",
     default_config: str | Path = "config/config.toml",
-    **kwargs
+    **kwargs,
 ):
     def main():
         typer_app = Typer()
