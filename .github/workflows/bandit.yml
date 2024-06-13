@@ -4,7 +4,7 @@ on:
   pull_request:
     branches:
       - main
-      - ci/jy-security-check
+      - ci/jy-security-scan
     paths:
       - '**.py'
 
