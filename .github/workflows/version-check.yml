@@ -20,57 +20,34 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.base_ref }}
-        id: base
 
-      - name: Set up Python for base branch
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
-      - name: Install Poetry for base branch
+      - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
 
-      - name: Get poetry version from base branch
-        run: |
-          base_poetry_version=$(python3 -c "import tomllib; print(tomllib.loads(open('pyproject.toml', 'rb').read().decode('utf-8'))['tool']['poetry']['version'])")
-          echo "base_poetry_version=$base_poetry_version" >> $GITHUB_ENV
-        shell: bash
+      - name: Get Poetry version from base branch
+        id: get_base_version
+        run: echo "base_poetry_version=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
 
       - name: Checkout head branch
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
-        id: head
 
-      - name: Set up Python for head branch
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
-      - name: Install Poetry for head branch
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-
-      - name: Get poetry version from head branch
-        run: |
-          head_poetry_version=$(python3 -c "import toml; print(toml.load('pyproject.toml')['tool']['poetry']['version'])")
-          echo "head_poetry_version=$head_poetry_version" >> $GITHUB_ENV
-        id: head_poetry_version
-        shell: bash
+      - name: Get Poetry version from head branch
+        id: get_head_version
+        run: echo "head_poetry_version=$(poetry version | awk '{print $2}')" >> $GITHUB_ENV
 
       - name: Compare Poetry versions
-        env:
-          BASE_POETRY_VERSION: ${{ env.base_poetry_version }}
-          HEAD_POETRY_VERSION: ${{ env.head_poetry_version }}
         run: |
-          BASE_POETRY_VERSION=${{ env.BASE_POETRY_VERSION }}
-          HEAD_POETRY_VERSION=${{ env.HEAD_POETRY_VERSION }}
-          if [ "$BASE_POETRY_VERSION" == "$HEAD_POETRY_VERSION" ]; then
-            echo "Merging version $HEAD_POETRY_VERSION to $BASE_POETRY_VERSION"
+          if [ "${{ env.base_poetry_version }}" == "${{ env.head_poetry_version }}" ]; then
             echo "Poetry version has not been updated in pyproject.toml"
-            exit 1 # This will cause the workflow to fail
+            exit 1 # Fail the workflow
           else
-            echo "Merging version $HEAD_POETRY_VERSION to $BASE_POETRY_VERSION"
             echo "Poetry version has been updated in pyproject.toml"
           fi
