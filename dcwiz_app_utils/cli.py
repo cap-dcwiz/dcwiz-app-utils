@@ -14,7 +14,7 @@ def create_cli_main(
     make_app: Callable[[...], FastAPI],
     envvar_prefix: str = "DCWIZ_APP",
     default_config: str | Path = "config/config.toml",
-    **kwargs
+    **kwargs,
 ):
     def main():
         typer_app = Typer()
@@ -24,7 +24,7 @@ def create_cli_main(
             config_path: Path = Option(
                 default_config, "--config", "-c", help="Config file path"
             ),
-            host: str = Option("0.0.0.0", "--host", "-h", help="Host to listen to"),
+            host: str = Option("127.0.0.1", "--host", "-h", help="Host to listen to"),
             port: int = Option(8000, "--port", "-p", help="Port to listen to"),
             loglevel: str = Option("info", "--loglevel", "-l", help="Log level"),
             root_path: str = Option(
