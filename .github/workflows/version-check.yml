@@ -33,7 +33,7 @@ jobs:
 
       - name: Get poetry version from base branch
         run: |
-          base_poetry_version=$(python3 -c "import tomllib; print(tomllib.loads(open('pyproject.toml', 'rb').read())['tool']['poetry']['version'])")
+          base_poetry_version=$(python3 -c "import tomllib; print(tomllib.loads(open('pyproject.toml', 'rb').read().decode('utf-8'))['tool']['poetry']['version'])")
           echo "base_poetry_version=$base_poetry_version" >> $GITHUB_ENV
         shell: bash
 
