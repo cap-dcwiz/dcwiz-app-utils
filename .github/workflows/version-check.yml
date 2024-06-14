@@ -32,7 +32,7 @@ jobs:
           curl -sSL https://install.python-poetry.org | python3 -
 
       - name: Get poetry version from base branch
-        run: echo "base_poetry_version=$(poetry version | awk '{print $4}')" >> $GITHUB_ENV
+        run: echo "base_poetry_version=$(grep -oP '(?<=version = ")[^"]*' pyproject.toml)" >> $GITHUB_ENV
         id: base_poetry_version
         shell: bash
 
@@ -52,14 +52,17 @@ jobs:
           curl -sSL https://install.python-poetry.org | python3 -
 
       - name: Get poetry version from head branch
-        run: echo "head_poetry_version=$(poetry version | awk '{print $4}')" >> $GITHUB_ENV
+        run: echo "head_poetry_version=$(grep -oP '(?<=version = ")[^"]*' pyproject.toml)" >> $GITHUB_ENV
         id: head_poetry_version
         shell: bash
 
       - name: Compare Poetry versions
+        env:
+          BASE_POETRY_VERSION: ${{ env.base_poetry_version }}
+          HEAD_POETRY_VERSION: ${{ env.head_poetry_version }}
         run: |
-          BASE_POETRY_VERSION=${{ env.base_poetry_version }}
-          HEAD_POETRY_VERSION=${{ env.head_poetry_version }}
+          BASE_POETRY_VERSION=${{ env.BASE_POETRY_VERSION }}
+          HEAD_POETRY_VERSION=${{ env.HEAD_POETRY_VERSION }}
           if [ "$BASE_POETRY_VERSION" == "$HEAD_POETRY_VERSION" ]; then
             echo "Merging version $HEAD_POETRY_VERSION to $BASE_POETRY_VERSION"
             echo "Poetry version has not been updated in pyproject.toml"
