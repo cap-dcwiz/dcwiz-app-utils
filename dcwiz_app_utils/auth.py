@@ -38,9 +38,9 @@ class AppOrAuthServiceClient:
 
         for item in resp["result"]:
             if item.startswith("data_hall."):
-                res["data_halls"].append(int(item.split(".")[1]))
+                res["data_halls"].append(item.split(".")[1])
             elif item.startswith("chiller_plant."):
-                res["chiller_plants"].append(int(item.split(".")[1]))
+                res["chiller_plants"].append(item.split(".")[1])
         return res
 
     async def get_self_profile(self, bearer: str = None, request=None):
