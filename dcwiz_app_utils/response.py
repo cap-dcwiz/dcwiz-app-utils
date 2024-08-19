@@ -36,10 +36,13 @@ def response_wrapper(base_model_type=None) -> Type[ResponseBase]:
         base_model_type = get_args(base_model_type)[0]
     else:
         many = False
+    extra_name = ""
+    if base_model_type.__name__ == "List":
+        extra_name = str(base_model_type).split("[")[1].split("]")[0].split(".")[-1]
     if many:
-        name = f"{base_model_type.__name__}ListResponse"
+        name = f"{base_model_type.__name__}ListResponse" + extra_name
     else:
-        name = f"{base_model_type.__name__}Response"
+        name = f"{base_model_type.__name__}Response" + extra_name
     if name not in _response_wrapper_cache:
         if base_model_type is None:
             _response_wrapper_cache[name] = pydantic.create_model(
