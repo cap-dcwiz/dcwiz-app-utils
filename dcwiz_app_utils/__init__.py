@@ -13,6 +13,7 @@ from .db import (
 from .error import ErrorSeverity, Error, DCWizServiceException
 from .api_proxy import APIProxy, get_api_proxy
 from .response import ResponseSchema, wrap_response
+from .log_formatter import initialize_logger
 
 __all__ = [
     "get_config",
@@ -35,4 +36,5 @@ __all__ = [
     "get_api_proxy",
     "ResponseSchema",
     "wrap_response",
+    "initialize_logger"
 ]
