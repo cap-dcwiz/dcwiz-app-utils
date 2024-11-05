@@ -8,7 +8,7 @@ def initialize_logger(level=logging.INFO, fmt='%(asctime)s | %(levelname)8s | %(
     :param fmt: format of the log messages
     :return: logger object
     """
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger()
     logger.setLevel(level)
 
     stdout_handler = logging.StreamHandler()
