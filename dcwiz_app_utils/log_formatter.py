@@ -19,7 +19,7 @@ def initialize_logger(
     stdout_handler.setFormatter(CustomFormatter(fmt))
 
     log_handler = TimedRotatingFileHandler(
-        filename="app.log",
+        filename="log/app.log",
         when="midnight",  # Rotate at midnight
         interval=1,  # Rotate every 1 day
         backupCount=7,  # Keep the last 7 days of logs

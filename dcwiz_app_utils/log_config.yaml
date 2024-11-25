@@ -17,7 +17,7 @@ handlers:
     class: logging.handlers.TimedRotatingFileHandler
     formatter: default
     level: INFO
-    filename: "uvicorn.log"
+    filename: "log/uvicorn.log"
     when: midnight
     interval: 1
     backupCount: 7
