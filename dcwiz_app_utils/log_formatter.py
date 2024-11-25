@@ -26,6 +26,8 @@ def initialize_logger(
         backupCount=7,  # Keep the last 7 days of logs
         encoding="utf-8",
     )
+    log_handler.setLevel(level)
+    log_handler.setFormatter(CustomFormatter(fmt))
     logger.addHandler(log_handler)
     logger.addHandler(stdout_handler)
 
