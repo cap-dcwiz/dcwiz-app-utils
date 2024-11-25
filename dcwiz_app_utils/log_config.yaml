@@ -1,0 +1,43 @@
+version: 1
+disable_existing_loggers: False
+formatters:
+  default:
+    (): 'dcwiz_app_utils.log_formatter.CustomFormatter'
+    fmt: "%(asctime)s | %(levelname)8s | %(message)s"
+handlers:
+  default:
+    class: logging.StreamHandler
+    formatter: default
+    stream: ext://sys.stderr
+  access:
+    class: logging.StreamHandler
+    formatter: default
+    stream: ext://sys.stdout
+  file:
+    class: dcwiz_app_utils.log_formatter.CustomRotatingFileHandler
+    formatter: default
+    level: INFO
+    filename: "log/uvicorn.log"
+    when: midnight
+    interval: 1
+    backupCount: 7
+    encoding: utf-8
+loggers:
+  uvicorn:
+    level: INFO
+    propagate: False
+    handlers:
+      - default
+      - file
+  uvicorn.error:
+    level: ERROR
+    propagate: False
+    handlers:
+      - default
+      - file
+  uvicorn.access:
+    level: INFO
+    propagate: False
+    handlers:
+      - default
+      - file
