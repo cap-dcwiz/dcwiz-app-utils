@@ -2,7 +2,7 @@ version: 1
 disable_existing_loggers: False
 formatters:
   default:
-    (): 'uvicorn.logging.CustomFormatter'
+    (): 'dcwiz_app_utils.log_formatter.CustomFormatter'
     fmt: "%(asctime)s | %(levelname)8s | %(message)s"
 handlers:
   default:

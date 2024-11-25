@@ -1,3 +1,4 @@
+import importlib.resources
 from typing import Callable
 
 import uvicorn
@@ -8,6 +9,12 @@ from fastapi import FastAPI
 
 from .app import set_config
 from .error import setup_exception_handlers
+
+
+def get_log_config_path():
+    # Extract the file to a temporary location if needed
+    with importlib.resources.path("dcwiz_app_utils", "log_config.yaml") as path:
+        return path
 
 
 def create_cli_main(
@@ -37,7 +44,12 @@ def create_cli_main(
             setup_exception_handlers(auth_app)
 
             uvicorn.run(
-                auth_app, host=host, port=port, log_level=loglevel, root_path=root_path, log_config="log_config.yaml"
+                auth_app,
+                host=host,
+                port=port,
+                log_level=loglevel,
+                root_path=root_path,
+                log_config=str(get_log_config_path()),
             )
 
         typer_app()
