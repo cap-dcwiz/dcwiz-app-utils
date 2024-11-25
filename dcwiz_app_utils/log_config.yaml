@@ -14,7 +14,7 @@ handlers:
     formatter: default
     stream: ext://sys.stdout
   file:
-    class: logging.handlers.TimedRotatingFileHandler
+    class: dcwiz_app_utils.log_formatter.CustomRotatingFileHandler
     formatter: default
     level: INFO
     filename: "log/uvicorn.log"

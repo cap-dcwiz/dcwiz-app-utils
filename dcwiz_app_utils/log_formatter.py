@@ -1,4 +1,5 @@
 import logging
+import os
 from logging.handlers import TimedRotatingFileHandler
 
 
@@ -18,14 +19,13 @@ def initialize_logger(
     stdout_handler.setLevel(level)
     stdout_handler.setFormatter(CustomFormatter(fmt))
 
-    log_handler = TimedRotatingFileHandler(
+    log_handler = CustomRotatingFileHandler(
         filename="log/app.log",
         when="midnight",  # Rotate at midnight
         interval=1,  # Rotate every 1 day
         backupCount=7,  # Keep the last 7 days of logs
         encoding="utf-8",
     )
-
     logger.addHandler(log_handler)
     logger.addHandler(stdout_handler)
 
@@ -40,6 +40,27 @@ def initialize_logger(
     access_logger.propagate = False
 
     return logger
+
+
+class CustomRotatingFileHandler(TimedRotatingFileHandler):
+    def __init__(
+        self,
+        filename,
+        when="h",
+        interval=1,
+        backupCount=0,
+        encoding=None,
+        delay=False,
+        utc=False,
+        atTime=None,
+        errors=None,
+    ):
+        directory = os.path.dirname(filename)
+        if directory:
+            os.makedirs(directory, exist_ok=True)
+        super().__init__(
+            filename, when, interval, backupCount, encoding, delay, utc, atTime, errors
+        )
 
 
 class CustomFormatter(logging.Formatter):
