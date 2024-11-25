@@ -39,3 +39,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 dcwiz-app-token-helper = "dcwiz_app_utils.tools.token:main"
+
+[tool.ruff]
+target-version = "py311"
