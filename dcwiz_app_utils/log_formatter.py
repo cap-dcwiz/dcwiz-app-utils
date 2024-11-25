@@ -1,5 +1,5 @@
 import logging
-
+from logging.handlers import TimedRotatingFileHandler
 
 def initialize_logger(
     level=logging.INFO, fmt="%(asctime)s | %(levelname)8s | %(message)s"
@@ -17,7 +17,26 @@ def initialize_logger(
     stdout_handler.setLevel(level)
     stdout_handler.setFormatter(CustomFormatter(fmt))
 
+    log_handler = TimedRotatingFileHandler(
+        filename="app.log",
+        when="midnight",  # Rotate at midnight
+        interval=1,       # Rotate every 1 day
+        backupCount=7,    # Keep the last 7 days of logs
+        encoding="utf-8",
+    )
+
+    logger.addHandler(log_handler)    
     logger.addHandler(stdout_handler)
+
+    uvicorn_logger = logging.getLogger("uvicorn")
+    uvicorn_logger.addHandler(log_handler)
+    uvicorn_logger.addHandler(stdout_handler)
+    uvicorn_logger.propagate = False
+
+    access_logger = logging.getLogger("uvicorn.access")
+    access_logger.addHandler(log_handler)
+    access_logger.addHandler(stdout_handler)
+    access_logger.propagate = False
 
     return logger
 
