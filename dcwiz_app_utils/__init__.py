@@ -36,5 +36,5 @@ __all__ = [
     "get_api_proxy",
     "ResponseSchema",
     "wrap_response",
-    "initialize_logger"
+    "initialize_logger",
 ]
