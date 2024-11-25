@@ -35,6 +35,21 @@ def create_cli_main(
             set_config(config)
             auth_app = make_app(**kwargs)
             setup_exception_handlers(auth_app)
+
+            log_config = uvicorn.config.LOGGING_CONFIG
+            log_config["formatters"]["default"] = {
+                "()": "dcwiz_app_utils.log_formatter.CustomFormatter",
+                "fmt": "%(asctime)s | %(levelname)8s | %(message)s",
+            }
+            log_config["formatters"]["access"] = {
+                "()": "dcwiz_app_utils.log_formatter.CustomFormatter",
+                "fmt": "%(asctime)s | %(levelname)8s | %(message)s",
+            }
+            log_config["formatters"]["error"] = {
+                "()": "dcwiz_app_utils.log_formatter.CustomFormatter",
+                "fmt": "%(asctime)s | %(levelname)8s | %(message)s",
+            }
+
             uvicorn.run(
                 auth_app, host=host, port=port, log_level=loglevel, root_path=root_path
             )

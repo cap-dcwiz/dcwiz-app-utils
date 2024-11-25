@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dcwiz-app-utils"
-version = "0.9.2"
+version = "0.9.3"
 description = ""
 authors = ["Zhu Zhaomeng <zhaomeng.zhu@ntu.edu.sg>"]
 license = "MIT"
