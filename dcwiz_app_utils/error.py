@@ -158,6 +158,7 @@ class DCWizPlatformAPIException(DCWizAPIException):
         except JSONDecodeError:
             error = exc.response.text
         content = dict(
+            error_message_key=ErrorCode.ERR_DATA_ERROR,
             message=exc.message
             or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
             errors=[
@@ -167,7 +168,6 @@ class DCWizPlatformAPIException(DCWizAPIException):
             ],
         )
         return dict(
-            error_message_key=ErrorCode.ERR_DATA_ERROR,
             status_code=status_code,
             content=content,
         )
@@ -208,12 +208,12 @@ class DCWizDataAPIException(DCWizAPIException):
                 ).dict()
             ]
         content = dict(
+            error_message_key=ErrorCode.ERR_API_ERROR,
             message=exc.message
             or f"Data Error: {exc.method} {exc.url}: {exc.response.status_code}",
             errors=errors,
         )
         return dict(
-            error_message_key=ErrorCode.ERR_API_ERROR,
             status_code=exc.response.status_code,
             content=content,
         )
@@ -228,12 +228,12 @@ class DCWizServiceAPIException(DCWizAPIException):
     async def exception_handler(_, exc, **kwargs):
         error = exc.response.json()
         content = dict(
+            error_message_key=ErrorCode.ERR_API_ERROR,
             message=exc.message or error["message"],
         )
         if "errors" in error:
             content["errors"] = [Error(**e).dict() for e in error["errors"]]
         return dict(
-            error_message_key=ErrorCode.ERR_API_ERROR,
             status_code=exc.response.status_code,
             content=content,
         )
@@ -252,12 +252,12 @@ class DCWizAuthException(DCWizAPIException):
             message = "Not Authorized, please use a different account."
         error = exc.response.json()
         content = dict(
+            error_message_key=ErrorCode.ERR_AUTH_ERROR,
             message=exc.message or message,
         )
         if "errors" in error:
             content["errors"] = [Error(**e).dict() for e in error["errors"]]
         return dict(
-            error_message_key=ErrorCode.ERR_AUTH_ERROR,
             status_code=exc.response.status_code,
             content=content,
         )
