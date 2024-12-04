@@ -52,6 +52,7 @@ class Error(BaseModel):
     type: str = Field(..., description="Error type")
     severity: ErrorSeverity = Field(ErrorSeverity.ERROR, description="Error severity")
     message: str | dict = Field(None, description="Error message")
+    error_message_key: str = Field(None, description="Error message key")
 
 
 class DCWizException(Exception):
@@ -83,11 +84,11 @@ class DCWizServiceException(DCWizException):
     """
 
     def __init__(
-        self,
-        error_message_key=ErrorCode.ERR_INTERNAL_ERROR,
-        message=None,
-        errors=None,
-        status_code=500,
+            self,
+            error_message_key=ErrorCode.ERR_INTERNAL_ERROR,
+            message=None,
+            errors=None,
+            status_code=500,
     ):
         super().__init__()
         self.message = message
@@ -136,7 +137,7 @@ class DCWizAPIException(DCWizException):
         content = dict(
             error_message_key=exc.response.error_message_key,
             message=exc.message
-            or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
+                    or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
             errors=[
                 Error(
                     type="API Error",
@@ -161,11 +162,12 @@ class DCWizPlatformAPIException(DCWizAPIException):
         except JSONDecodeError:
             error = exc.response.text
         content = dict(
-            error_message_key=ErrorCode.ERR_DATA_ERROR,
+            error_message_key=ErrorCode.ERR_API_ERROR,
             message=exc.message
-            or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
+                    or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
             errors=[
                 Error(
+                    error_message_key=ErrorCode.ERR_API_ERROR,
                     type="API Error", severity=ErrorSeverity.ERROR, message=error
                 ).dict()
             ],
@@ -188,6 +190,7 @@ class DCWizDataAPIException(DCWizAPIException):
             if isinstance(error["detail"], list):
                 errors = [
                     Error(
+                        error_message_key=ErrorCode.ERR_DATA_ERROR,
                         type="Data Error",
                         severity=ErrorSeverity.ERROR,
                         message=f"{k}:{v}",
@@ -197,6 +200,7 @@ class DCWizDataAPIException(DCWizAPIException):
             else:
                 errors = [
                     Error(
+                        error_message_key=ErrorCode.ERR_DATA_ERROR,
                         type="Data Error",
                         severity=ErrorSeverity.ERROR,
                         message=str(error["detail"]),
@@ -205,15 +209,16 @@ class DCWizDataAPIException(DCWizAPIException):
         except JSONDecodeError:
             errors = [
                 Error(
+                    error_message_key=ErrorCode.ERR_API_ERROR,
                     type="API Error",
                     severity=ErrorSeverity.ERROR,
                     message=exc.response.text,
                 ).dict()
             ]
         content = dict(
-            error_message_key=ErrorCode.ERR_API_ERROR,
+            error_message_key=ErrorCode.ERR_DATA_ERROR,
             message=exc.message
-            or f"Data Error: {exc.method} {exc.url}: {exc.response.status_code}",
+                    or f"Data Error: {exc.method} {exc.url}: {exc.response.status_code}",
             errors=errors,
         )
         return dict(
@@ -278,6 +283,7 @@ async def http_exception_handler(_, exc):
         message=message,
         errors=[
             Error(
+                error_message_key=ErrorCode.ERR_INTERNAL_ERROR,
                 type="HTTP Error",
                 message=message,
                 severity=ErrorSeverity.ERROR,
@@ -299,6 +305,7 @@ async def connect_error_handler(request, exc):
         message="Connection Error",
         errors=[
             Error(
+                error_message_key=ErrorCode.ERR_API_ERROR,
                 type="Connection Error",
                 message=f"{str(exc)}: {request.url}",
                 severity=ErrorSeverity.ERROR,
@@ -318,12 +325,12 @@ async def exception_group_handler(_, exc):
     status_code = (
         exc.exceptions[0].status_code
         if len(exc.exceptions) == 1
-        and isinstance(exc.exceptions[0], DCWizServiceException)
+           and isinstance(exc.exceptions[0], DCWizServiceException)
         else 500
     )
     for inner_exc in exc.exceptions:
         if isinstance(inner_exc, DCWizAPIException) or isinstance(
-            inner_exc, DCWizServiceException
+                inner_exc, DCWizServiceException
         ):
             result = await inner_exc.exception_handler(_, inner_exc)
             summary = result["content"]["message"]
@@ -331,6 +338,7 @@ async def exception_group_handler(_, exc):
             if not inner_errors:
                 errors.append(
                     Error(
+                        error_message_key=ErrorCode.ERR_INTERNAL_ERROR,
                         type="Unknown",
                         message=summary,
                         severity=ErrorSeverity.ERROR,
@@ -344,6 +352,7 @@ async def exception_group_handler(_, exc):
         else:
             errors.append(
                 Error(
+                    error_message_key=ErrorCode.ERR_INTERNAL_ERROR,
                     type="Unknown Exception Group",
                     message=str(inner_exc),
                     severity=ErrorSeverity.ERROR,
@@ -354,7 +363,7 @@ async def exception_group_handler(_, exc):
         errors=errors,
     )
     if len(exc.exceptions) == 1 and isinstance(
-        exc.exceptions[0], DCWizServiceException
+            exc.exceptions[0], DCWizServiceException
     ):
         content["error_message_key"] = exc.exceptions[0].error_message_key
 
