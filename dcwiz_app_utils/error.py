@@ -102,7 +102,9 @@ class DCWizServiceException(DCWizException):
             error_message_key=exc.error_message_key,
         )
         if exc.errors:
-            content["errors"] = [e.dict() for e in exc.errors]
+            content["errors"] = [
+                e.dict() if not isinstance(e, dict) else e for e in exc.errors
+            ]
         return dict(status_code=exc.status_code, content=content)
 
 
