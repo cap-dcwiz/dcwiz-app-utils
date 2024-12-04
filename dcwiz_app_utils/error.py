@@ -312,6 +312,9 @@ async def exception_group_handler(_, exc):
     :return: JSON response with error
     """
     errors = []
+    status_code = exc.exceptions[0].status_code if len(exc.exceptions) == 1 and isinstance(
+        exc.exceptions[0], DCWizServiceException
+    ) else 500
     for inner_exc in exc.exceptions:
         if isinstance(inner_exc, DCWizAPIException) or isinstance(
                 inner_exc, DCWizServiceException
@@ -344,7 +347,10 @@ async def exception_group_handler(_, exc):
         message="Multiple Errors" if len(errors) > 1 else errors[0]["message"],
         errors=errors,
     )
-    return JSONResponse(status_code=500 if len(errors) > 1 else errors[0]["status_code"], content=content)
+    if len(exc.exceptions) == 1 and isinstance(exc.exceptions[0], DCWizServiceException):
+        content["error_message_key"] = exc.exceptions[0].error_message_key
+
+    return JSONResponse(status_code=status_code, content=content)
 
 
 def setup_exception_handlers(app) -> None:
