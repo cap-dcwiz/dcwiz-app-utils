@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dcwiz-app-utils"
-version = "0.9.3"
+version = "0.9.4"
 description = ""
 authors = ["Zhu Zhaomeng <zhaomeng.zhu@ntu.edu.sg>"]
 license = "MIT"
@@ -14,17 +14,17 @@ dynaconf = "^3.1.11"
 alembic = "^1.9.3"
 cachetools = "^5.3.0"
 asyncache = "^0.3.1"
-redis = "^4.5.1"
-aiofiles = "^23.1.0"
+redis = "^5.2.0"
+aiofiles = "^24.1.0"
 authlib = "^1.2.0"
 pandas = "^2.0.0"
-httpx = "^0.24.0"
+httpx = "^0.28.0"
 loguru = "^0.7.0"
-typer = "^0.12.3"
-fastapi = "^0.111.0"
+typer = "^0.15.0"
+fastapi = "^0.115.6"
 itsdangerous = "^2.1.2"
 
-uvicorn = {version="^0.30.1", optional=true}
+uvicorn = {version="^0.32.1", optional=true}
 python-dotenv = {version="^1.0.0", optional=true}
 
 [tool.poetry.extras]

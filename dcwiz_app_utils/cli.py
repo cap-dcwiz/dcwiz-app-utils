@@ -1,4 +1,5 @@
 import importlib.resources
+import logging
 from typing import Callable
 
 import uvicorn
@@ -7,6 +8,7 @@ from typer import Typer, Option
 from dynaconf import Dynaconf
 from fastapi import FastAPI
 
+from . import initialize_logger
 from .app import set_config
 from .error import setup_exception_handlers
 
@@ -42,6 +44,7 @@ def create_cli_main(
             set_config(config)
             auth_app = make_app(**kwargs)
             setup_exception_handlers(auth_app)
+            initialize_logger(getattr(logging, loglevel.upper()))
 
             uvicorn.run(
                 auth_app,
