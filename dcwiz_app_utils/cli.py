@@ -1,14 +1,13 @@
 import importlib.resources
-import logging
+from pathlib import Path
 from typing import Callable
 
 import uvicorn
-from pathlib import Path
-from typer import Typer, Option
 from dynaconf import Dynaconf
 from fastapi import FastAPI
+from typer import Typer, Option
 
-from . import initialize_logger
+from .log_formatter import initialize_logger
 from .app import set_config
 from .error import setup_exception_handlers
 
