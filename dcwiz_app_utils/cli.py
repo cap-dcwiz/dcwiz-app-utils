@@ -44,7 +44,7 @@ def create_cli_main(
             set_config(config)
             auth_app = make_app(**kwargs)
             setup_exception_handlers(auth_app)
-            initialize_logger(getattr(logging, loglevel.upper()))
+            initialize_logger(loglevel)
 
             uvicorn.run(
                 auth_app,

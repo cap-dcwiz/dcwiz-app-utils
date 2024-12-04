@@ -12,6 +12,10 @@ def initialize_logger(
     :param fmt: format of the log messages
     :return: logger object
     """
+
+    if isinstance(level, str):
+        level = getattr(logging, level.upper())
+
     logger = logging.getLogger()
     logger.setLevel(level)
 
