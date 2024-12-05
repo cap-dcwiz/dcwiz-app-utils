@@ -53,6 +53,7 @@ class Error(BaseModel):
     severity: ErrorSeverity = Field(ErrorSeverity.ERROR, description="Error severity")
     message: str | dict = Field(None, description="Error message")
     error_message_key: str = Field(None, description="Error message key")
+    error_message_variables: dict = Field(None, description="Error message variables")
 
 
 class DCWizException(Exception):
@@ -85,16 +86,18 @@ class DCWizServiceException(DCWizException):
 
     def __init__(
             self,
-            error_message_key=ErrorCode.ERR_INTERNAL_ERROR,
             message=None,
             errors=None,
             status_code=500,
+            error_message_key=ErrorCode.ERR_INTERNAL_ERROR,
+            error_message_variables=None
     ):
         super().__init__()
         self.message = message
         self.errors = errors
         self.status_code = status_code
         self.error_message_key = error_message_key
+        self.error_message_variables = error_message_variables
 
     @staticmethod
     async def exception_handler(_, exc, **kwargs):
