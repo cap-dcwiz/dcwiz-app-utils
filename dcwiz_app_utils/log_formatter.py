@@ -1,11 +1,10 @@
 import logging
 import os
 from logging.handlers import TimedRotatingFileHandler
+import re
 
 
-def initialize_logger(
-    level=logging.INFO, fmt="%(asctime)s | %(levelname)8s | %(message)s"
-):
+def initialize_logger(level=logging.INFO, fmt=""):
     """
     Initializes a logger with the specified format and level
     :param level: level of the logger
@@ -72,16 +71,21 @@ class CustomRotatingFileHandler(TimedRotatingFileHandler):
 class CustomFormatter(logging.Formatter):
     """Logging colored formatter, adapted from https://stackoverflow.com/a/56944256/3638629"""
 
-    grey = "\x1b[38;21m"
+    grey = "\x1b[90m"
     blue = "\x1b[38;5;39m"
     yellow = "\x1b[38;5;226m"
     red = "\x1b[38;5;196m"
     bold_red = "\x1b[31;1m"
     reset = "\x1b[0m"
+    purple = "\x1b[38;5;93m"
+    white = "\x1b[97m"
+    cyan = "\x1b[36m"
+    magenta = "\x1b[35m"
 
     def __init__(self, fmt):
         super().__init__()
         self.fmt = fmt
+        self.bracket_color = self.magenta
         self.FORMATS = {
             logging.DEBUG: self.grey + self.fmt + self.reset,
             logging.INFO: self.blue + self.fmt + self.reset,
@@ -89,8 +93,41 @@ class CustomFormatter(logging.Formatter):
             logging.ERROR: self.red + self.fmt + self.reset,
             logging.CRITICAL: self.bold_red + self.fmt + self.reset,
         }
+        self.LEVEL_COLOR = {
+            logging.DEBUG: self.grey,
+            logging.INFO: self.blue,
+            logging.WARNING: self.yellow,
+            logging.ERROR: self.red,
+            logging.CRITICAL: self.bold_red,
+        }
+
+    @staticmethod
+    def remove_ansi_escape_sequences(text):
+        """Remove ANSI escape sequences from the text to avoid nested coloring issues."""
+        ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+        return ansi_escape.sub("", text)
 
     def format(self, record):
-        log_fmt = self.FORMATS.get(record.levelno)
-        formatter = logging.Formatter(log_fmt)
+        level_color = self.LEVEL_COLOR.get(record.levelno)
+        time_color = self.cyan
+        message_color = self.white
+
+        if not self.fmt:
+            if record.msg:
+                record.msg = self.remove_ansi_escape_sequences(record.msg)
+
+                record.msg = re.sub(
+                    r"([\[\{\(\<][^\]\}\)\>]*[\]\}\)\>])",  # Match whole bracketed sections
+                    rf"{self.bracket_color}\1{self.reset}{message_color}",  # Apply color to entire section
+                    record.msg,
+                )
+
+            formatter = logging.Formatter(
+                f"{time_color}%(asctime)s{self.reset} |"
+                f" {level_color}%(levelname)s{self.reset} |"
+                f" {message_color}%(message)s{self.reset}"
+            )
+        else:
+            log_fmt = self.FORMATS.get(record.levelno)
+            formatter = logging.Formatter(log_fmt)
         return formatter.format(record)

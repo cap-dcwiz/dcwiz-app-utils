@@ -47,6 +47,8 @@ class Error(BaseModel):
         type (str): Error type.
         severity (ErrorSeverity): Error severity.
         message (str | dict): Error message.
+        error_message_key (str): The key for the error message for translation purposes.
+        error_message_variables (dict, Optional): Variables to fill in the error message.
     """
 
     type: str = Field(..., description="Error type")
@@ -75,22 +77,23 @@ class DCWizServiceException(DCWizException):
     Exception class for DCWiz service-level errors.
 
     Attributes:
-        error_message_key (str): The key for the error message for translation purposes.
         message (str): The error message.
         errors (dict): Additional error details.
         status_code (int): The HTTP status code associated with the exception.
+        error_message_key (str): The key for the error message for translation purposes.
+        error_message_variables (dict, Optional): Variables to fill in the error message.
 
     Methods:
         exception_handler: A static method that handles the exception and returns a response.
     """
 
     def __init__(
-            self,
-            message=None,
-            errors=None,
-            status_code=500,
-            error_message_key=ErrorCode.ERR_INTERNAL_ERROR,
-            error_message_variables=None
+        self,
+        message=None,
+        errors=None,
+        status_code=500,
+        error_message_key=ErrorCode.ERR_INTERNAL_ERROR,
+        error_message_variables=None,
     ):
         super().__init__()
         self.message = message
@@ -140,7 +143,7 @@ class DCWizAPIException(DCWizException):
         content = dict(
             error_message_key=exc.response.error_message_key,
             message=exc.message
-                    or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
+            or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
             errors=[
                 Error(
                     type="API Error",
@@ -167,11 +170,13 @@ class DCWizPlatformAPIException(DCWizAPIException):
         content = dict(
             error_message_key=ErrorCode.ERR_API_ERROR,
             message=exc.message
-                    or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
+            or f"Error {exc.method}ing {exc.url}, get status code {status_code}",
             errors=[
                 Error(
                     error_message_key=ErrorCode.ERR_API_ERROR,
-                    type="API Error", severity=ErrorSeverity.ERROR, message=error
+                    type="API Error",
+                    severity=ErrorSeverity.ERROR,
+                    message=error,
                 ).dict()
             ],
         )
@@ -221,7 +226,7 @@ class DCWizDataAPIException(DCWizAPIException):
         content = dict(
             error_message_key=ErrorCode.ERR_DATA_ERROR,
             message=exc.message
-                    or f"Data Error: {exc.method} {exc.url}: {exc.response.status_code}",
+            or f"Data Error: {exc.method} {exc.url}: {exc.response.status_code}",
             errors=errors,
         )
         return dict(
@@ -328,12 +333,12 @@ async def exception_group_handler(_, exc):
     status_code = (
         exc.exceptions[0].status_code
         if len(exc.exceptions) == 1
-           and isinstance(exc.exceptions[0], DCWizServiceException)
+        and isinstance(exc.exceptions[0], DCWizServiceException)
         else 500
     )
     for inner_exc in exc.exceptions:
         if isinstance(inner_exc, DCWizAPIException) or isinstance(
-                inner_exc, DCWizServiceException
+            inner_exc, DCWizServiceException
         ):
             result = await inner_exc.exception_handler(_, inner_exc)
             summary = result["content"]["message"]
@@ -366,7 +371,7 @@ async def exception_group_handler(_, exc):
         errors=errors,
     )
     if len(exc.exceptions) == 1 and isinstance(
-            exc.exceptions[0], DCWizServiceException
+        exc.exceptions[0], DCWizServiceException
     ):
         content["error_message_key"] = exc.exceptions[0].error_message_key
 

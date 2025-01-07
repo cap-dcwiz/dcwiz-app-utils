@@ -3,7 +3,7 @@ disable_existing_loggers: False
 formatters:
   default:
     (): 'dcwiz_app_utils.log_formatter.CustomFormatter'
-    fmt: "%(asctime)s | %(levelname)8s | %(message)s"
+    fmt: ""
 handlers:
   default:
     class: logging.StreamHandler
