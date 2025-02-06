@@ -2,6 +2,7 @@
 This module defines various exception classes and exception handlers for error handling in the DCWiz application.
 """
 
+import logging
 from enum import Enum
 from json import JSONDecodeError
 from typing import Any
@@ -112,6 +113,7 @@ class DCWizServiceException(DCWizException):
             content["errors"] = [
                 e.dict() if not isinstance(e, dict) else e for e in exc.errors
             ]
+        logging.error(str(content))
         return dict(status_code=exc.status_code, content=content)
 
 
@@ -152,6 +154,7 @@ class DCWizAPIException(DCWizException):
                 ).dict()
             ],
         )
+        logging.error(str(content))
         return dict(status_code=status_code, content=content)
 
 
@@ -180,6 +183,7 @@ class DCWizPlatformAPIException(DCWizAPIException):
                 ).dict()
             ],
         )
+        logging.error(str(content))
         return dict(
             status_code=status_code,
             content=content,
@@ -229,6 +233,7 @@ class DCWizDataAPIException(DCWizAPIException):
             or f"Data Error: {exc.method} {exc.url}: {exc.response.status_code}",
             errors=errors,
         )
+        logging.error(str(content))
         return dict(
             status_code=exc.response.status_code,
             content=content,
@@ -249,6 +254,7 @@ class DCWizServiceAPIException(DCWizAPIException):
         )
         if "errors" in error:
             content["errors"] = [Error(**e).dict() for e in error["errors"]]
+        logging.error(str(content))
         return dict(
             status_code=exc.response.status_code,
             content=content,
@@ -273,6 +279,7 @@ class DCWizAuthException(DCWizAPIException):
         )
         if "errors" in error:
             content["errors"] = [Error(**e).dict() for e in error["errors"]]
+        logging.error(str(content))
         return dict(
             status_code=exc.response.status_code,
             content=content,
@@ -298,6 +305,7 @@ async def http_exception_handler(_, exc):
             ).dict()
         ],
     )
+    logging.error(str(content))
     return JSONResponse(status_code=exc.status_code, content=content)
 
 
@@ -320,6 +328,7 @@ async def connect_error_handler(request, exc):
             ).dict()
         ],
     )
+    logging.error(str(content))
     return JSONResponse(status_code=503, content=content)
 
 
@@ -374,7 +383,7 @@ async def exception_group_handler(_, exc):
         exc.exceptions[0], DCWizServiceException
     ):
         content["error_message_key"] = exc.exceptions[0].error_message_key
-
+    logging.error(str(content))
     return JSONResponse(status_code=status_code, content=content)
 
 
