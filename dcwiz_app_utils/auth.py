@@ -1,6 +1,26 @@
 import logging
 
+from pydantic import BaseModel
+
 from .api_proxy import APIProxy
+
+
+class Profile(BaseModel):
+    """
+    Profile model
+    """
+    username: str
+    firstName: str
+    lastName: str
+    enabledDataHalls: list[str]
+    enabledChillerPlants: list[str]
+    email: str
+    external: bool
+    id: str
+
+    @property
+    def name(self):
+        return self.firstName + " " + self.lastName
 
 
 class AppOrAuthServiceClient:
@@ -23,7 +43,7 @@ class AppOrAuthServiceClient:
         return cls(auth_url=config.get("auth.url"))
 
     @staticmethod
-    def extract_bearer(request):
+    def extract_bearer(request) -> str | None:
         if "Authorization" in request.headers:
             return request.headers["Authorization"].replace("Bearer ", "")
         return None
@@ -43,12 +63,12 @@ class AppOrAuthServiceClient:
                 res["chiller_plants"].append(item.split(".")[1])
         return res
 
-    async def get_self_profile(self, bearer: str = None, request=None):
+    async def get_self_profile(self, bearer: str = None, request=None) -> Profile:
         if not bearer and request:
             bearer = self.extract_bearer(request)
         if not bearer:
-            return {}
-        return await self.api_proxy.auth.get("/users/profile", bearer=bearer)
+            return Profile()
+        return (await self.api_proxy.auth.get("/users/profile", bearer=bearer)).get("result")
 
 
 def get_app_or_auth_service_client(config=None):
