@@ -12,8 +12,6 @@ class Profile(BaseModel):
     username: str
     firstName: str
     lastName: str
-    enabledDataHalls: list[str]
-    enabledChillerPlants: list[str]
     email: str
     external: bool
     id: str
