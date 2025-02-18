@@ -9,6 +9,7 @@ class Profile(BaseModel):
     """
     Profile model
     """
+
     username: str
     firstName: str
     lastName: str
@@ -66,7 +67,23 @@ class AppOrAuthServiceClient:
             bearer = self.extract_bearer(request)
         if not bearer:
             return Profile()
-        return Profile.parse_obj(await self.api_proxy.auth.get("/users/profile", bearer=bearer)).get("result")
+        return Profile.parse_obj(
+            (await self.api_proxy.auth.get("/users/profile", bearer=bearer)).get(
+                "result"
+            )
+        )
+
+    async def resolve_names(
+        self, user_ids: list[str], bearer: str = None, request=None
+    ) -> dict[str, str]:
+        if not bearer and request:
+            bearer = self.extract_bearer(request)
+        data = (
+            await self.api_proxy.auth.post(
+                "/users/resolve-names", json={"user_ids": user_ids}, bearer=bearer
+            )
+        ).get("result")
+        return data
 
 
 def get_app_or_auth_service_client(config=None):
