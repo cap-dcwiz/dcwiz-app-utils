@@ -270,8 +270,11 @@ class DCWizAuthException(DCWizAPIException):
     async def exception_handler(_, exc, **kwargs):
         if exc.response.status_code == 401:
             message = "Not Authenticated, please login."
-        else:
+        elif exc.response.status_code == 403:
             message = "Not Authorized, please use a different account."
+        else:
+            message = "Error occurred while authenticating."
+
         error = exc.response.json()
         content = dict(
             error_message_key=ErrorCode.ERR_AUTH_ERROR,
@@ -279,6 +282,14 @@ class DCWizAuthException(DCWizAPIException):
         )
         if "errors" in error:
             content["errors"] = [Error(**e).dict() for e in error["errors"]]
+        else:
+            content["errors"] = [
+                Error(
+                    type="API Error",
+                    severity=ErrorSeverity.ERROR,
+                    message=error,
+                ).dict()
+            ]
         logging.error(str(content))
         return dict(
             status_code=exc.response.status_code,
