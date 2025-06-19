@@ -5,7 +5,7 @@ This module defines various exception classes and exception handlers for error h
 import logging
 from enum import Enum
 from json import JSONDecodeError
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
@@ -56,7 +56,7 @@ class Error(BaseModel):
     severity: ErrorSeverity = Field(ErrorSeverity.ERROR, description="Error severity")
     message: str | dict = Field(None, description="Error message")
     error_message_key: str = Field(None, description="Error message key")
-    error_message_variables: dict = Field(None, description="Error message variables")
+    error_message_variables: Optional[dict] = Field({}, description="Error message variables")
 
 
 class DCWizException(Exception):
