@@ -154,6 +154,7 @@ class PerformanceTracker:
             raise ValueError(f"Session {session_id} not found")
 
         session = self._local.sessions[session_id]
+
         end_time = time.time()
         total_time = end_time - session["start_time"]
 
@@ -250,12 +251,17 @@ class PerformanceTracker:
                 @functools.wraps(func)
                 async def async_wrapper(*args, **kwargs):
                     name = operation_name or f"{func.__module__}.{func.__name__}"
-                    session_id = self.start(name)
+                    start_time = time.time()
                     try:
                         result = await func(*args, **kwargs)
                         return result
                     finally:
-                        self.end(session_id)
+                        end_time = time.time()
+                        total_time = end_time - start_time
+                        logger.log(
+                            self.log_level,
+                            f"[{self.name}] Completed '{name}': {total_time:.4f}s total",
+                        )
 
                 return async_wrapper
             else:
@@ -263,12 +269,17 @@ class PerformanceTracker:
                 @functools.wraps(func)
                 def sync_wrapper(*args, **kwargs):
                     name = operation_name or f"{func.__module__}.{func.__name__}"
-                    session_id = self.start(name)
+                    start_time = time.time()
                     try:
                         result = func(*args, **kwargs)
                         return result
                     finally:
-                        self.end(session_id)
+                        end_time = time.time()
+                        total_time = end_time - start_time
+                        logger.log(
+                            self.log_level,
+                            f"[{self.name}] Completed '{name}': {total_time:.4f}s total",
+                        )
 
                 return sync_wrapper
 
