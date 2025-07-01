@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dcwiz-app-utils"
-version = "0.9.10"
+version = "0.10.0"
 description = ""
 authors = ["Zhu Zhaomeng <zhaomeng.zhu@ntu.edu.sg>"]
 license = "MIT"
@@ -32,7 +32,7 @@ python-multipart = "^0.0.19"
 dev-helper = ["uvicorn", "python-dotenv"]
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.9.6"
+ruff = "^0.12.1"
 
 [build-system]
 requires = ["poetry-core"]
