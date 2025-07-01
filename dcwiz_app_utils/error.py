@@ -56,7 +56,9 @@ class Error(BaseModel):
     severity: ErrorSeverity = Field(ErrorSeverity.ERROR, description="Error severity")
     message: str | dict = Field(None, description="Error message")
     error_message_key: str = Field(None, description="Error message key")
-    error_message_variables: Optional[dict] = Field({}, description="Error message variables")
+    error_message_variables: Optional[dict] = Field(
+        {}, description="Error message variables"
+    )
 
 
 class DCWizException(Exception):

@@ -1,6 +1,9 @@
+import logging
+import threading
 from contextlib import contextmanager, asynccontextmanager
+from typing import Dict
 
-from redis import Redis
+from redis import Redis, ConnectionPool
 from sqlalchemy import create_engine, select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -121,17 +124,60 @@ async def async_db_session_from_config(config=None):
         await session.close()
 
 
-@contextmanager
-def redis_from_config(config=None):
+_redis_pools: Dict[str, ConnectionPool] = {}
+_pool_lock = threading.Lock()
+
+
+def get_redis_pool(config=None) -> ConnectionPool:
+    """Get or create a Redis connection pool for the given config"""
     if config is None:
         from .app import get_config
 
         config = get_config()
-    redis = Redis(
-        host=config.get("redis.host", "localhost"),
-        port=config.get("redis.port", 6379),
-        db=config.get("redis.db", 0),
-        password=config.get("redis.password", None),
-    )
-    yield redis
-    redis.close()
+
+    # Create a cache key based on config
+    pool_key = f"{config.get('redis.host', 'localhost')}:{config.get('redis.port', 6379)}:{config.get('redis.db', 0)}"
+
+    with _pool_lock:
+        if pool_key not in _redis_pools:
+            _redis_pools[pool_key] = ConnectionPool(
+                host=config.get("redis.host", "localhost"),
+                port=config.get("redis.port", 6379),
+                db=config.get("redis.db", 0),
+                password=config.get("redis.password", None),
+                max_connections=20,  # Adjust based on your needs
+                retry_on_timeout=True,
+                socket_timeout=5,
+                socket_connect_timeout=5,
+                socket_keepalive=True,
+                health_check_interval=30,
+                decode_responses=True,
+            )
+
+    return _redis_pools[pool_key]
+
+
+def clean_redis_pool():
+    with _pool_lock:
+        for pool_key, pool in _redis_pools.items():
+            try:
+                pool.disconnect()
+                logging.info(f"Closed Redis pool: {pool_key}")
+            except Exception as e:
+                logging.error(f"Error closing Redis pool {pool_key}: {e}")
+        _redis_pools.clear()
+
+
+@contextmanager
+def redis_from_config(config=None):
+    """
+    Improved version with connection pooling.
+    Creates connection pool once and reuses connections.
+    """
+    pool = get_redis_pool(config)
+    redis = Redis(connection_pool=pool)
+    try:
+        yield redis
+    finally:
+        # Don't close the connection - it goes back to the pool
+        pass
