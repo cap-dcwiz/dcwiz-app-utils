@@ -132,6 +132,7 @@ def get_redis_pool(config=None) -> ConnectionPool:
     """Get or create a Redis connection pool for the given config"""
     if config is None:
         from .app import get_config
+
         config = get_config()
 
     # Create a cache key based on config
@@ -150,10 +151,11 @@ def get_redis_pool(config=None) -> ConnectionPool:
                 socket_connect_timeout=5,
                 socket_keepalive=True,
                 health_check_interval=30,
-                decode_responses=True
+                decode_responses=True,
             )
 
     return _redis_pools[pool_key]
+
 
 def clean_redis_pool():
     with _pool_lock:
@@ -164,6 +166,7 @@ def clean_redis_pool():
             except Exception as e:
                 logging.error(f"Error closing Redis pool {pool_key}: {e}")
         _redis_pools.clear()
+
 
 @contextmanager
 def redis_from_config(config=None):
@@ -178,5 +181,3 @@ def redis_from_config(config=None):
     finally:
         # Don't close the connection - it goes back to the pool
         pass
-
-

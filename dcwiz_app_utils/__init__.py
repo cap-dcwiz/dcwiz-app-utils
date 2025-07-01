@@ -10,6 +10,15 @@ from .db import (
     async_db_session_from_config,
     redis_from_config,
 )
+from .performance import (
+    PerformanceTracker,
+    start_performance,
+    checkpoint,
+    end_performance,
+    measure_performance,
+    performance_decorator,
+    fastapi_performance_decorator,
+)
 from .error import ErrorSeverity, Error, DCWizServiceException
 from .api_proxy import APIProxy, get_api_proxy
 from .response import ResponseSchema, wrap_response
@@ -37,4 +46,11 @@ __all__ = [
     "ResponseSchema",
     "wrap_response",
     "initialize_logger",
+    "PerformanceTracker",
+    "start_performance",
+    "checkpoint",
+    "end_performance",
+    "measure_performance",
+    "performance_decorator",
+    "fastapi_performance_decorator",
 ]
