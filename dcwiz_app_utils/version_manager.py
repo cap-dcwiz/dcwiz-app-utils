@@ -5,6 +5,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Union, Any
 
+from pandas.core.window.doc import kwargs_scipy
+
 from dcwiz_app_utils import get_config, get_api_proxy
 
 
@@ -88,12 +90,10 @@ class VersionManagerClient:
             },
         )
 
-    async def create_node(self, node_type: str, name: str, files: dict, message: str = "Create Node"):
+    async def create_node(self, node_type: str, **kwargs):
         return await self.platform.post(
-            name=name,
             url=f"{self.version_manager_url}/{node_type}",
-            message=message,
-            files=files,
+            **kwargs
         )
 
     async def patch_metadata(self, node_type: str, uuid: str, meta_dict=None):
