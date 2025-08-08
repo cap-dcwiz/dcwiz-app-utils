@@ -88,6 +88,13 @@ class VersionManagerClient:
             },
         )
 
+    async def create_node(self, node_type, files: dict, message: str = "Create Node"):
+        return await self.platform.post(
+            url=f"{self.version_manager_url}/{node_type}",
+            message=message,
+            files=files,
+        )
+
     async def patch_metadata(self, node_type: str, uuid: str, meta_dict=None):
         """
 
