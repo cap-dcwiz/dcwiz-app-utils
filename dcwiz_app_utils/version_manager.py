@@ -88,8 +88,9 @@ class VersionManagerClient:
             },
         )
 
-    async def create_node(self, node_type, files: dict, message: str = "Create Node"):
+    async def create_node(self, node_type: str, name: str, files: dict, message: str = "Create Node"):
         return await self.platform.post(
+            name=name,
             url=f"{self.version_manager_url}/{node_type}",
             message=message,
             files=files,
