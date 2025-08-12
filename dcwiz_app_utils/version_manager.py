@@ -5,8 +5,6 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Union, Any
 
-from pandas.core.window.doc import kwargs_scipy
-
 from dcwiz_app_utils import get_config, get_api_proxy
 
 
@@ -17,7 +15,7 @@ def get_version_manager():
 
 class VersionManagerClient:
     def __init__(self):
-        self._locks = None
+        self._locks = {}
         config = get_config()
         api_proxy = get_api_proxy(config)
         self.platform = api_proxy.platform
@@ -87,6 +85,7 @@ class VersionManagerClient:
             file_contents={k: v for k, v in file_contents.items() if v is not None}
         )
 
+    # Node CRUD Functions
     async def get_nodes(self, node_type: str, **kwargs):
         """
         Retrieve nodes of a given type.
@@ -105,8 +104,7 @@ class VersionManagerClient:
 
     async def create_node(self, node_type: str, body):
         return await self.platform.post(
-            url=f"{self.version_manager_url}/{node_type}",
-            json=body
+            url=f"{self.version_manager_url}/{node_type}", json=body
         )
 
     async def save_as_node(self, node_type: str, node_id: str, body: dict):
@@ -114,6 +112,25 @@ class VersionManagerClient:
             url=f"{self.version_manager_url}/{node_type}/{node_id}", json=body
         )
 
+    async def delete_node(self, node_type: str, node_id: str, skip_dependants=False):
+        return await self.platform.delete(
+            url=self.version_manager_url + f"/{node_type}/{node_id}",
+            params={"dry_run": False, "skip_dependants": skip_dependants},
+        )
+
+    async def delete_nodes(self, node_type: str, skip_dependants=False, **kwargs):
+        return await self.platform.delete(
+            url=self.version_manager_url + f"/{node_type}/multple_nodes",
+            params={"dry_run": False, "skip_dependants": skip_dependants},
+            json=kwargs,
+        )
+
+    async def duplicate_node(self, node_type: str, node_id: str):
+        return await self.platform.post(
+            url=f"{self.version_manager_url}/{node_type}/{node_id}/duplicate"
+        )
+
+    # Metadata Functions
     async def get_metadata(self, node_type: str, node_id: str):
         return await self.platform.get(
             url=f"{self.version_manager_url}/{node_type}/{node_id}/metadata",
@@ -169,19 +186,7 @@ class VersionManagerClient:
             json=dict(modification_time=modification_time, **keys),
         )
 
-    async def delete_node(self, node_type: str, node_id: str, skip_dependants=False):
-        return await self.platform.delete(
-            url=self.version_manager_url + f"/{node_type}/{node_id}",
-            params={"dry_run": False, "skip_dependants": skip_dependants},
-        )
-
-    async def delete_nodes(self, node_type: str, skip_dependants=False, **kwargs):
-        return await self.platform.delete(
-            url=self.version_manager_url + f"/{node_type}/multple_nodes",
-            params={"dry_run": False, "skip_dependants": skip_dependants},
-            json=kwargs,
-        )
-
+    # Cache & File Management Functions
     async def upload_file(
         self,
         node_type: str,
@@ -220,7 +225,6 @@ class VersionManagerClient:
             },
         )
 
-    # Cache related functions
     async def fetch_files(self, node_cls: str, uuid: str, files: dict):
         """
         Downloads File from Experiment Manager if file is not cache locally
