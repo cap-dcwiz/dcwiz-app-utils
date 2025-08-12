@@ -169,6 +169,13 @@ class VersionManagerClient:
             params={"dry_run": False, "skip_dependants": skip_dependants},
         )
 
+    async def delete_nodes(self, node_type: str, skip_dependants=False, **kwargs):
+        return await self.platform.delete(
+            url=self.version_manager_url + f"/{node_type}/multple_nodes",
+            params={"dry_run": False, "skip_dependants": skip_dependants},
+            json=kwargs,
+        )
+
     async def upload_file(
         self,
         node_type: str,
