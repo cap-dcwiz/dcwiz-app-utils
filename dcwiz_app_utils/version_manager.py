@@ -113,21 +113,26 @@ class VersionManagerClient:
             url=f"{self.version_manager_url}/{node_type}/{node_id}", json=body
         )
 
-    async def patch_metadata(self, node_type: str, uuid: str, meta_dict=None):
+    async def get_metadata(self, node_type: str, node_id: str):
+        return await self.platform.get(
+            url=f"{self.version_manager_url}/{node_type}/{node_id}/metadata",
+        )
+
+    async def patch_metadata(self, node_type: str, node_id: str, meta_dict=None):
         """
 
         :param node_type:
-        :param uuid:
+        :param node_id:
         :param meta_dict:
         :return:
         """
         if meta_dict is None:
             raise ValueError(
-                f"Metadata Patch for [{node_type}]<{uuid}> must be provided"
+                f"Metadata Patch for [{node_type}]<{node_id}> must be provided"
             )
 
         return await self.platform.patch(
-            url=self.version_manager_url + f"/{node_type}/{uuid}/metadata",
+            url=self.version_manager_url + f"/{node_type}/{node_id}/metadata",
             json=meta_dict,
         )
 
