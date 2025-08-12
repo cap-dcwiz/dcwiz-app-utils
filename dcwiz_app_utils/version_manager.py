@@ -103,9 +103,10 @@ class VersionManagerClient:
             },
         )
 
-    async def create_node(self, node_type: str, **kwargs):
+    async def create_node(self, node_type: str, body):
         return await self.platform.post(
-            url=f"{self.version_manager_url}/{node_type}", **kwargs
+            url=f"{self.version_manager_url}/{node_type}",
+            json=body
         )
 
     async def save_as_node(self, node_type: str, node_id: str, body: dict):
