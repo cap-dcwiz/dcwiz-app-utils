@@ -28,7 +28,14 @@ class VersionManagerClient:
         if not Path(self.cache_path).exists():
             os.makedirs(self.cache_path, exist_ok=True)
 
-    async def get_node(self, node_cls, node_id, fetch_all_files=False, files=None, cache_result_path=None):
+    async def get_node(
+        self,
+        node_cls,
+        node_id,
+        fetch_all_files=False,
+        files=None,
+        cache_result_path=None,
+    ):
         """
         Retrieves information about a node and its associated files.
 
@@ -45,7 +52,9 @@ class VersionManagerClient:
         if files is None:
             files = {}
         if fetch_all_files:
-            all_files_available = await self.platform.get(f"{self.version_manager_url}/{node_cls}/{node_id}/files")
+            all_files_available = await self.platform.get(
+                f"{self.version_manager_url}/{node_cls}/{node_id}/files"
+            )
             new_files = {}
             for file_path in all_files_available:
                 new_files[file_path] = "json"
@@ -70,9 +79,13 @@ class VersionManagerClient:
                 }
             )
 
-        node_summary = await self.platform.get(f"{self.version_manager_url}/{node_cls}/{node_id}")
+        node_summary = await self.platform.get(
+            f"{self.version_manager_url}/{node_cls}/{node_id}"
+        )
 
-        return node_summary | dict(file_contents={k: v for k, v in file_contents.items() if v is not None})
+        return node_summary | dict(
+            file_contents={k: v for k, v in file_contents.items() if v is not None}
+        )
 
     async def get_nodes(self, node_type: str, **kwargs):
         """
@@ -92,14 +105,12 @@ class VersionManagerClient:
 
     async def create_node(self, node_type: str, **kwargs):
         return await self.platform.post(
-            url=f"{self.version_manager_url}/{node_type}",
-            **kwargs
+            url=f"{self.version_manager_url}/{node_type}", **kwargs
         )
 
     async def save_as_node(self, node_type: str, node_id: str, body: dict):
         return await self.platform.post(
-            url=f"{self.version_manager_url}/{node_type}/{node_id}",
-            json=body
+            url=f"{self.version_manager_url}/{node_type}/{node_id}", json=body
         )
 
     async def patch_metadata(self, node_type: str, uuid: str, meta_dict=None):
@@ -111,23 +122,31 @@ class VersionManagerClient:
         :return:
         """
         if meta_dict is None:
-            raise ValueError(f"Metadata Patch for [{node_type}]<{uuid}> must be provided")
+            raise ValueError(
+                f"Metadata Patch for [{node_type}]<{uuid}> must be provided"
+            )
 
         return await self.platform.patch(
             url=self.version_manager_url + f"/{node_type}/{uuid}/metadata",
             json=meta_dict,
         )
 
-    async def delete_metadata(self, node_type: str, uuid: str, modification_time: Union[float, str], keys: dict):
+    async def delete_metadata(
+        self,
+        node_type: str,
+        uuid: str,
+        modification_time: Union[float, str],
+        keys: dict,
+    ):
         """
         Delete metadata keys for a specific node.
-        
+
         Args:
             node_type: The type of the node
             uuid: The UUID of the node
             modification_time: The modification time (will be converted to string)
             keys: Dictionary of keys to delete
-            
+
         Returns:
             The response from the delete operation
         """
@@ -135,7 +154,9 @@ class VersionManagerClient:
             modification_time = str(modification_time)
 
         if not keys:
-            raise ValueError(f"no keys specified for deletion for [{node_type}]<{uuid}>")
+            raise ValueError(
+                f"no keys specified for deletion for [{node_type}]<{uuid}>"
+            )
 
         return await self.platform.delete(
             url=self.version_manager_url + f"/{node_type}/{uuid}/metadata",
@@ -148,11 +169,18 @@ class VersionManagerClient:
             params={"dry_run": False, "skip_dependants": skip_dependants},
         )
 
-    async def upload_file(self, node_type: str, uuid: str, file_path: str, modification_time: Union[float, str],
-                          content: Any, file_format: str = None):
+    async def upload_file(
+        self,
+        node_type: str,
+        uuid: str,
+        file_path: str,
+        modification_time: Union[float, str],
+        content: Any,
+        file_format: str = None,
+    ):
         """
         Upload a file to the version manager.
-        
+
         Args:
             node_type: The type of the node
             uuid: The UUID of the node
@@ -160,17 +188,23 @@ class VersionManagerClient:
             modification_time: The modification time
             content: The file content to upload
             file_format: Optional file format. If not provided, will be inferred from file_path
-            
+
         Returns:
             The response from the upload operation
         """
         extension = Path(file_path).suffix.lower()
         if extension != ".json":
             content = base64.b64encode(content.encode()).decode()
-            
+
         return await self.platform.put(
             url=self.version_manager_url + f"/{node_type}/{uuid}/files/{file_path}",
-            json={"format": file_format, "content": content, "modification_time": str(modification_time)},
+            json={
+                "format": file_format
+                if isinstance(file_format, str)
+                else extension[1:],
+                "content": content,
+                "modification_time": str(modification_time),
+            },
         )
 
     # Cache related functions
