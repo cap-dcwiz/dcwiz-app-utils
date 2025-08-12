@@ -96,6 +96,12 @@ class VersionManagerClient:
             **kwargs
         )
 
+    async def save_as_node(self, node_type: str, node_id: str, body: dict):
+        return await self.platform.post(
+            url=f"{self.version_manager_url}/{node_type}/{node_id}",
+            json=body
+        )
+
     async def patch_metadata(self, node_type: str, uuid: str, meta_dict=None):
         """
 
