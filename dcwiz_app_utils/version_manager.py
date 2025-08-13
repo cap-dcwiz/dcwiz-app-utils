@@ -21,10 +21,10 @@ class VersionManagerClient:
         self.platform = api_proxy.platform
         self.version_manager_url = config.platform.version_manager_url
 
-        self.cache_path = config.platform.version_manager_cache_path
+        self._cache_path = config.platform.version_manager_cache_path
 
-        if not Path(self.cache_path).exists():
-            os.makedirs(self.cache_path, exist_ok=True)
+        if not Path(self._cache_path).exists():
+            os.makedirs(self._cache_path, exist_ok=True)
 
     async def get_node(
         self,
@@ -229,7 +229,7 @@ class VersionManagerClient:
         """
         Downloads File from Experiment Manager if file is not cache locally
         """
-        Path(self.cache_path(node_id)).mkdir(exist_ok=True, parents=True)
+        Path(self._cache_path(node_id)).mkdir(exist_ok=True, parents=True)
 
         requests = []
         for file_path, file_format in files.items():
@@ -251,11 +251,11 @@ class VersionManagerClient:
             self._locks[uuid] = asyncio.Lock()
         return self._locks[uuid]
 
-    def cache_path(self, uuid, file_path=""):
+    def cache_path(self, uuid, file_path="") -> str:
         """
         Returns a file path for local cache file
         """
-        return os.path.join(self.cache_path, uuid, file_path)
+        return str(os.path.join(self._cache_path, uuid, file_path))
 
     def _is_cached(self, uuid, file_path):
         """
