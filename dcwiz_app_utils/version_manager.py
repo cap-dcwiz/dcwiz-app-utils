@@ -229,7 +229,7 @@ class VersionManagerClient:
         """
         Downloads File from Experiment Manager if file is not cache locally
         """
-        Path(self._cache_path(node_id)).mkdir(exist_ok=True, parents=True)
+        Path(self.cache_path(node_id)).mkdir(exist_ok=True, parents=True)
 
         requests = []
         for file_path, file_format in files.items():
