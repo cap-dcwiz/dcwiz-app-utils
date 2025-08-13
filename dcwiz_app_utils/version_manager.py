@@ -190,7 +190,7 @@ class VersionManagerClient:
     async def upload_file(
         self,
         node_type: str,
-        uuid: str,
+        node_id: str,
         file_path: str,
         modification_time: Union[float, str],
         content: Any,
@@ -201,7 +201,7 @@ class VersionManagerClient:
 
         Args:
             node_type: The type of the node
-            uuid: The UUID of the node
+            node_id: The UUID of the node
             file_path: The file path (used to determine format if not specified)
             modification_time: The modification time
             content: The file content to upload
@@ -215,7 +215,7 @@ class VersionManagerClient:
             content = base64.b64encode(content.encode()).decode()
 
         return await self.platform.put(
-            url=self.version_manager_url + f"/{node_type}/{uuid}/files/{file_path}",
+            url=self.version_manager_url + f"/{node_type}/{node_id}/files/{file_path}",
             json={
                 "format": file_format
                 if isinstance(file_format, str)
@@ -225,20 +225,20 @@ class VersionManagerClient:
             },
         )
 
-    async def fetch_files(self, node_cls: str, uuid: str, files: dict):
+    async def fetch_files(self, node_type: str, node_id: str, files: dict):
         """
         Downloads File from Experiment Manager if file is not cache locally
         """
-        Path(self.cache_path(uuid)).mkdir(exist_ok=True, parents=True)
+        Path(self.cache_path(node_id)).mkdir(exist_ok=True, parents=True)
 
         requests = []
         for file_path, file_format in files.items():
-            if not self._is_cached(uuid, file_path):
+            if not self._is_cached(node_id, file_path):
                 requests.append(
                     (
                         "GET",
-                        f"{self.version_manager_url}/{node_cls}/{uuid}/files/{file_path}",
-                        dict(filename=Path(self.cache_path(uuid, file_path))),
+                        f"{self.version_manager_url}/{node_type}/{node_id}/files/{file_path}",
+                        dict(filename=Path(self.cache_path(node_id, file_path))),
                     )
                 )
         await self.platform.parallel_stream(requests)
