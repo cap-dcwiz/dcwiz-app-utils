@@ -28,8 +28,8 @@ class VersionManagerClient:
 
     async def get_node(
         self,
-        node_cls,
-        node_id,
+        node_type: str,
+        node_id: str,
         fetch_all_files=False,
         files=None,
         cache_result_path=None,
@@ -38,7 +38,7 @@ class VersionManagerClient:
         Retrieves information about a node and its associated files.
 
         Args:
-            node_cls (str): The class of the node.
+            node_type (str): The class of the node.
             node_id (str): The ID of the node.
             fetch_all_files (bool, optional): Whether to fetch all available files for the node. Defaults to False.
             files (dict, optional): A dictionary of file paths and formats to fetch. Defaults to None.
@@ -51,7 +51,7 @@ class VersionManagerClient:
             files = {}
         if fetch_all_files:
             all_files_available = await self.platform.get(
-                f"{self.version_manager_url}/{node_cls}/{node_id}/files"
+                f"{self.version_manager_url}/{node_type}/{node_id}/files"
             )
             new_files = {}
             for file_path in all_files_available:
@@ -59,14 +59,14 @@ class VersionManagerClient:
             files = new_files
 
         if cache_result_path:
-            await self.fetch_files(node_cls, node_id, files)
+            await self.fetch_files(node_type, node_id, files)
             file_contents = {}
         else:
             file_contents = await self.platform.parallel_request(
                 {
                     file_path: (
                         "get",
-                        f"{self.version_manager_url}/{node_cls}/{node_id}/files/{file_path}",
+                        f"{self.version_manager_url}/{node_type}/{node_id}/files/{file_path}",
                         dict(
                             params={"format": file_format},
                             expect_json=file_format == "json",
@@ -78,7 +78,7 @@ class VersionManagerClient:
             )
 
         node_summary = await self.platform.get(
-            f"{self.version_manager_url}/{node_cls}/{node_id}"
+            f"{self.version_manager_url}/{node_type}/{node_id}"
         )
 
         return node_summary | dict(
