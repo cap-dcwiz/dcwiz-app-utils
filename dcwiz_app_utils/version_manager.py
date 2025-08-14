@@ -32,7 +32,7 @@ class VersionManagerClient:
         node_id: str,
         fetch_all_files=False,
         files=None,
-        cache_result_path=None,
+        cache_files=False,
     ):
         """
         Retrieves information about a node and its associated files.
@@ -42,7 +42,7 @@ class VersionManagerClient:
             node_id (str): The ID of the node.
             fetch_all_files (bool, optional): Whether to fetch all available files for the node. Defaults to False.
             files (dict, optional): A dictionary of file paths and formats to fetch. Defaults to None.
-            cache_result_path (str, optional): The path to cache the fetched files. Defaults to None.
+            cache_files (bool, optional): To cache file to local file storage instead of returning as response. Defaults to False.
 
         Returns:
             dict: A dictionary containing the node summary and the contents of the fetched files.
@@ -58,7 +58,7 @@ class VersionManagerClient:
                 new_files[file_path] = "json"
             files = new_files
 
-        if cache_result_path:
+        if cache_files:
             await self.fetch_files(node_type, node_id, files)
             file_contents = {}
         else:
