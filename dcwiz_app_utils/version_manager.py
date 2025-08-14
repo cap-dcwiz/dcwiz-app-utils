@@ -212,7 +212,11 @@ class VersionManagerClient:
         """
         extension = Path(file_path).suffix.lower()
         if extension != ".json":
-            content = base64.b64encode(content.encode()).decode()
+            # Handle both string and bytes content
+            if isinstance(content, bytes):
+                content = base64.b64encode(content).decode()
+            else:
+                content = base64.b64encode(content.encode()).decode()
 
         return await self.platform.put(
             url=self.version_manager_url + f"/{node_type}/{node_id}/files/{file_path}",
