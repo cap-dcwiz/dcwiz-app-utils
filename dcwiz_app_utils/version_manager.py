@@ -109,7 +109,7 @@ class VersionManagerClient:
 
     async def save_as_node(self, node_type: str, node_id: str, body: dict):
         return await self.platform.post(
-            url=f"{self.version_manager_url}/{node_type}/{node_id}", json=body
+            url=f"{self.version_manager_url}/{node_type}/{node_id}/save-as", json=body
         )
 
     async def delete_node(self, node_type: str, node_id: str, skip_dependants=False):

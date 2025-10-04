@@ -67,7 +67,7 @@ class AppOrAuthServiceClient:
             bearer = self.extract_bearer(request)
         if not bearer:
             return Profile()
-        return Profile.parse_obj(
+        return Profile.model_validate(
             (await self.api_proxy.auth.get("/users/profile", bearer=bearer)).get(
                 "result"
             )
