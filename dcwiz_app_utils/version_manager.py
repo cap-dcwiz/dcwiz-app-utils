@@ -159,7 +159,7 @@ class VersionManagerClient:
         node_type: str,
         uuid: str,
         modification_time: Union[float, str],
-        keys: dict,
+        keys: list[str],
     ):
         """
         Delete metadata keys for a specific node.
@@ -183,7 +183,7 @@ class VersionManagerClient:
 
         return await self.platform.delete(
             url=self.version_manager_url + f"/{node_type}/{uuid}/metadata",
-            json=dict(modification_time=modification_time, **keys),
+            json=dict(modification_time=modification_time, keys=keys),
         )
 
     # Cache & File Management Functions
