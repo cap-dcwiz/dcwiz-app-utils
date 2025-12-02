@@ -4,6 +4,8 @@ from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, Field, BeforeValidator, model_validator
 
+from dcwiz_app_utils.error import ErrorCode
+
 
 def validate_and_convert_to_utc(v: Union[str, datetime, int, None]) -> Optional[datetime]:
     """
@@ -99,11 +101,11 @@ class TimeRangeMixin(BaseModel):
     end: UTCDatetime = Field(..., description="End datetime (converted to UTC)")
 
     @model_validator(mode='after')
-    def validate_end_after_start(self, v):
+    def validate_end_after_start(self):
         """Ensure end is after start."""
-        if v.start and v.end <= v.start:
-            raise ValueError("end must be after start")
-        return v
+        if self.start and self.end <= self.start:
+            raise ValueError(ErrorCode.ERR_TIME_RANGE_ERROR.value)
+        return self
 
     def is_within_range(self, dt: datetime) -> bool:
         """Check if a datetime falls within the range."""
