@@ -52,6 +52,7 @@ def validate_and_convert_to_utc(v: Union[str, datetime, int, None]) -> Optional[
 # Type alias for automatically validated UTC timestamps
 UTCDatetime = Annotated[datetime, BeforeValidator(validate_and_convert_to_utc)]
 
+
 class TimezoneMixin(BaseModel):
     """
     Mixin for query params that need timezone output conversion.
@@ -114,3 +115,39 @@ class TimeRangeMixin(BaseModel):
         else:
             dt = dt.astimezone(timezone.utc)
         return self.start <= dt < self.end
+
+
+class SingleTimestampMixin(BaseModel):
+    """
+    Mixin for query params that filter by a single timestamp field.
+    Useful for filtering by created_at, updated_at, etc.
+    """
+    timestamp: UTCDatetime = Field(
+        None,
+        description="Filter by timestamp (converted to UTC)"
+    )
+    timestamp_operator: Optional[str] = Field(
+        "eq",
+        description="Operator for timestamp comparison: eq, gt, gte, lt, lte",
+        pattern="^(eq|gt|gte|lt|lte)$"
+    )
+
+    def matches_timestamp(self, dt: datetime) -> bool:
+        """Check if a datetime matches the timestamp filter."""
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        else:
+            dt = dt.astimezone(timezone.utc)
+
+        if self.timestamp_operator == "eq":
+            return dt == self.timestamp
+        elif self.timestamp_operator == "gt":
+            return dt > self.timestamp
+        elif self.timestamp_operator == "gte":
+            return dt >= self.timestamp
+        elif self.timestamp_operator == "lt":
+            return dt < self.timestamp
+        elif self.timestamp_operator == "lte":
+            return dt <= self.timestamp
+
+        return True

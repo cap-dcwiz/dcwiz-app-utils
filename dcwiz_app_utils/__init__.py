@@ -23,7 +23,8 @@ from .performance import (
 from .datetime_ingestion import (
     UTCDatetime,
     TimezoneMixin,
-    TimeRangeMixin
+    TimeRangeMixin,
+    SingleTimestampMixin
 )
 
 
@@ -63,5 +64,6 @@ __all__ = [
     "fastapi_performance_decorator",
     "TimezoneMixin",
     "TimeRangeMixin",
-    "UTCDatetime"
+    "UTCDatetime",
+    "SingleTimestampMixin",
 ]
