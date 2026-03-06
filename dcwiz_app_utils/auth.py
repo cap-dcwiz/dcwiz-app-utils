@@ -50,10 +50,14 @@ class AppOrAuthServiceClient:
     async def get_self_scopes(self, bearer: str = None, request=None):
         if not bearer and request:
             bearer = self.extract_bearer(request)
-        res = dict(data_halls=[], chiller_plants=[])
+        res = dict(service_client=False, data_halls=[], chiller_plants=[])
         if not bearer:
             return res
         resp = await self.api_proxy.auth.get("/authz/objects", bearer=bearer)
+
+        if "service_client" in resp:
+            res["service_client"] = True
+            return res
 
         for item in resp["result"]:
             if item.startswith("data_hall."):
