@@ -55,7 +55,7 @@ class AppOrAuthServiceClient:
             return res
         resp = await self.api_proxy.auth.get("/authz/objects", bearer=bearer)
 
-        if "service_client" in resp:
+        if "service_client" in resp['result']:
             res["service_client"] = True
             return res
 
