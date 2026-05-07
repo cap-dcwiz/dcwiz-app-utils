@@ -86,14 +86,24 @@ class AppOrAuthServiceClient:
         return data
 
 
-def get_app_or_auth_service_client(config=None):
-    return AppOrAuthServiceClient.from_config(config)
+_auth_client_instances: dict[str, "AppOrAuthServiceClient"] = {}
 
 
-def get_auth_service_client(config=None):
+def get_app_or_auth_service_client(config=None) -> "AppOrAuthServiceClient":
+    if config is None:
+        from .app import get_config
+
+        config = get_config()
+    auth_url = config.get("auth.url", "")
+    if auth_url not in _auth_client_instances:
+        _auth_client_instances[auth_url] = AppOrAuthServiceClient.from_config(config)
+    return _auth_client_instances[auth_url]
+
+
+def get_auth_service_client(config=None) -> "AppOrAuthServiceClient":
     """
     Deprecated. Use get_app_or_auth_service_client instead.
     :param config:
     :return:
     """
-    return AppOrAuthServiceClient.from_config(config)
+    return get_app_or_auth_service_client(config)

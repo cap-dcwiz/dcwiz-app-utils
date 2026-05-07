@@ -19,7 +19,7 @@ from .error import (
     ErrorSeverity,
     DCWizAuthException,
 )
-from httpx import AsyncClient, BasicAuth
+from httpx import AsyncClient, BasicAuth, Limits
 import pandas as pd
 from cachetools import TTLCache, cached
 from cachetools.keys import hashkey
@@ -105,22 +105,27 @@ class APIProxy:
         self.auth_info = auth_info
         self.verify = verify
 
+        self._client = AsyncClient(
+            timeout=self.timeout,
+            auth=self.auth_info,
+            verify=self.verify,
+            headers={"Accept-Encoding": "gzip, deflate, br"},
+            limits=Limits(
+                max_connections=100,
+                max_keepalive_connections=20,
+                keepalive_expiry=30.0,
+            ),
+        )
+
         for alias, name in self.ALIASES.items():
             setattr(self, alias, _Alias(self, name))
 
     @contextlib.asynccontextmanager
     async def client(self, client=None, bearer=None):
-        if client:
-            yield client
-        else:
-            client = AsyncClient(
-                timeout=self.timeout,
-                auth=self.auth_info,
-                verify=self.verify,
-                headers={"Authorization": f"Bearer {bearer}"} if bearer else None,
-            )
-            yield client
-            await client.aclose()
+        yield client if client else self._client
+
+    async def aclose(self):
+        await self._client.aclose()
 
     async def _request(
         self,
@@ -138,8 +143,13 @@ class APIProxy:
         else:
             full_url = f"{self.base_url}{url}"
 
-        async with self.client(client, bearer) as client:
-            res = await client.request(method, full_url, *args, **kwargs)
+        if bearer:
+            headers = dict(kwargs.pop("headers", {}) or {})
+            headers.setdefault("Authorization", f"Bearer {bearer}")
+            kwargs["headers"] = headers
+
+        async with self.client(client, bearer) as c:
+            res = await c.request(method, full_url, *args, **kwargs)
             if res.status_code != 200:
                 logger.error(f"API Error: {method} {full_url}: {res.status_code}")
                 logger.debug(res.text)
@@ -166,8 +176,13 @@ class APIProxy:
         else:
             full_url = f"{self.base_url}{url}"
 
-        async with self.client(client, bearer) as client:
-            async with client.stream(method, full_url, *args, **kwargs) as res:
+        if bearer:
+            headers = dict(kwargs.pop("headers", {}) or {})
+            headers.setdefault("Authorization", f"Bearer {bearer}")
+            kwargs["headers"] = headers
+
+        async with self.client(client, bearer) as c:
+            async with c.stream(method, full_url, *args, **kwargs) as res:
                 if res.status_code != 200:
                     raise exception_class(method=method, url=full_url, response=res)
 
@@ -395,5 +410,15 @@ class APIProxy:
         return getattr(_Alias(self), item)
 
 
-def get_api_proxy(config: Dynaconf = None):
-    return APIProxy.from_config(config)
+_api_proxy_instances: dict[str, "APIProxy"] = {}
+
+
+def get_api_proxy(config: Dynaconf = None) -> "APIProxy":
+    if config is None:
+        from .app import get_config
+
+        config = get_config()
+    base_url = config.get("platform.base_url", "")
+    if base_url not in _api_proxy_instances:
+        _api_proxy_instances[base_url] = APIProxy.from_config(config)
+    return _api_proxy_instances[base_url]
