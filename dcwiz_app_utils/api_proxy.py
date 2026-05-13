@@ -109,7 +109,6 @@ class APIProxy:
             timeout=self.timeout,
             auth=self.auth_info,
             verify=self.verify,
-            headers={"Accept-Encoding": "gzip, deflate, br"},
             limits=Limits(
                 max_connections=100,
                 max_keepalive_connections=20,
