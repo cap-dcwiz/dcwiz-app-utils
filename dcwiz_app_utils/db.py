@@ -71,7 +71,7 @@ class WithDB:
 
 class WithAsyncDB:
     def __init__(self, *args, sql_uri=None, **kwargs):
-        self.db_engine = create_async_engine(sql_uri)
+        self.db_engine = create_async_engine(sql_uri, pool_pre_ping=True, pool_recycle=1800)
         self.session_cls = async_sessionmaker(
             autocommit=False, autoflush=False, bind=self.db_engine
         )
